@@ -17,6 +17,10 @@ import {
 import { useEnterSubmit } from '@/lib/hooks/use-enter-submit'
 import { nanoid } from 'nanoid'
 import { toast } from 'sonner'
+import { AudioManager } from './whisper/AudioManager'
+import { useTranscriber } from '@/hooks/useTranscriber'
+import { cn } from '@/lib/utils'
+import Transcript from './whisper/Transcript'
 
 export function PromptForm({
   input,
@@ -29,6 +33,9 @@ export function PromptForm({
   const inputRef = React.useRef<HTMLTextAreaElement>(null)
   const { submitUserMessage, describeImage } = useActions()
   const [_, setMessages] = useUIState<typeof AI>()
+
+  const transcriber = useTranscriber()
+  const [showAudio, setShowAudio] = React.useState(false)
 
   React.useEffect(() => {
     if (inputRef.current) {
@@ -118,6 +125,17 @@ export function PromptForm({
           }
         }}
       />
+
+      <div className={cn('mb-4', !showAudio && 'hidden')}>
+        <Transcript transcribedData={transcriber.output} />
+        <AudioManager
+          transcriber={transcriber}
+          // wsClient={wsClient}
+          // setServerMessages={setServerMessages}
+          setInput={setInput}
+        />
+      </div>
+
       <div className="relative flex max-h-60 w-full grow flex-col overflow-hidden bg-zinc-100 px-12 sm:rounded-full sm:px-12">
         {/* <Tooltip>
           <TooltipTrigger asChild> */}
@@ -125,16 +143,16 @@ export function PromptForm({
           variant="outline"
           size="icon"
           className="absolute left-4 top-[14px] size-8 rounded-full bg-background p-0 sm:left-4"
-          onClick={() => {
-            fileRef.current?.click()
-          }}
+          onClick={() => setShowAudio(p => !p)}
         >
           <IconPlus />
           <span className="sr-only">New Chat</span>
         </Button>
+
         {/* </TooltipTrigger>
           <TooltipContent>Add Attachments</TooltipContent>
         </Tooltip> */}
+
         <Textarea
           ref={inputRef}
           tabIndex={0}
