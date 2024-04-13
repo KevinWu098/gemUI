@@ -48,7 +48,7 @@ async def websocket_endpoint(websocket: WebSocket, client_id: Optional[str] = No
         return
     # save this client into server memory
     await manager.connect(websocket, client_id)      
-    browser = open_browser(browser)
+    browser = open_browser()
     try:
         while True:
             data = await websocket.receive_json()

@@ -2,7 +2,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 
-def open_browser(browser):
+def open_browser(browser=None):
     if (browser):
         browser.quit()
     options = Options()
