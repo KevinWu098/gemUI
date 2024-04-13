@@ -67,9 +67,9 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
       <div className={cn('pb-[200px] pt-4', className)} ref={messagesRef}>
         {messages.length ? (
           <ChatList messages={messages} isShared={false} session={session} />
-        ) : (
-          <EmptyScreen />
-        )}
+        ) : null
+        // <EmptyScreen />
+        }
         <div className="h-px w-full" ref={visibilityRef} />
       </div>
       <ChatPanel

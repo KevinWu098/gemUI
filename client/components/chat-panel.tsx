@@ -23,6 +23,36 @@ export interface ChatPanelProps {
   scrollToBottom: () => void
 }
 
+const exampleMessages = [
+  {
+    heading: 'Order a Pepperoni Pizza online',
+    subheading: "from Domino's Pizza",
+    message: "Order me a Pepperoni Pizza online from Domino's Pizza"
+  },
+  {
+    heading: 'Check your medical coverage',
+    subheading: "on Kaiser Permanente's dashboard",
+    message: `Check my medical coverage on Kaiser Permanente's dashboard`
+  }
+]
+
+const socket = new WebSocket('ws://localhost:8000')
+
+const SocketIndicator = () => {
+  const state = socket.readyState
+
+  return (
+    <div
+      className={cn(
+        'fixed bottom-1 right-1 z-50 size-6 rounded-full bg-gray-800 p-3',
+        state === socket.CLOSED && 'bg-red-500',
+        state === socket.CLOSING && 'bg-yellow-500',
+        state === socket.OPEN && 'bg-green-500'
+      )}
+    />
+  )
+}
+
 export function ChatPanel({
   id,
   title,
@@ -33,24 +63,30 @@ export function ChatPanel({
 }: ChatPanelProps) {
   const [aiState] = useAIState()
   const [messages, setMessages] = useUIState<typeof AI>()
-  const { submitUserMessage } = useActions()
+  // const { submitUserMessage } = useActions()
   const [shareDialogOpen, setShareDialogOpen] = React.useState(false)
 
-  const exampleMessages = [
-    {
-      heading: 'List flights flying from',
-      subheading: 'San Francisco to Rome today',
-      message: `List flights flying from San Francisco to Rome today`
-    },
-    {
-      heading: 'What is the status',
-      subheading: 'of flight BA142?',
-      message: 'What is the status of flight BA142?'
+  const submitUserMessage = (message: string) => {
+    socket.send(JSON.stringify({ event: 'prompt', prompt: message }))
+    console.log('Message Sent')
+  }
+
+  socket.onmessage = function (event) {
+    console.log('Received message:', event.data)
+
+    try {
+      const message = JSON.parse(event.data)
+      setMessages(currentMessages => [...currentMessages, message])
+      console.log('Parsed message:', message)
+    } catch (e) {
+      console.error('Error parsing message:', e)
     }
-  ]
+  }
 
   return (
     <div className="fixed inset-x-0 bg-white/90 bottom-0 w-full duration-300 ease-in-out peer-[[data-state=open]]:group-[]:lg:pl-[250px] peer-[[data-state=open]]:group-[]:xl:pl-[300px] dark:from-10%">
+      <SocketIndicator />
+
       <ButtonScrollToBottom
         isAtBottom={isAtBottom}
         scrollToBottom={scrollToBottom}
@@ -66,7 +102,7 @@ export function ChatPanel({
                   'cursor-pointer bg-zinc-50 text-zinc-950 rounded-2xl p-4 sm:p-6 hover:bg-zinc-100 transition-colors',
                   index > 1 && 'hidden md:block'
                 )}
-                onClick={async () => {
+                onClick={() => {
                   setMessages(currentMessages => [
                     ...currentMessages,
                     {
@@ -76,14 +112,15 @@ export function ChatPanel({
                   ])
 
                   try {
-                    const responseMessage = await submitUserMessage(
-                      example.message
-                    )
+                    // const responseMessage = await submitUserMessage(
+                    //   example.message
+                    // )
+                    submitUserMessage(example.message)
 
-                    setMessages(currentMessages => [
-                      ...currentMessages,
-                      responseMessage
-                    ])
+                    // setMessages(currentMessages => [
+                    //   ...currentMessages,
+                    //   responseMessage
+                    // ])
                   } catch {
                     toast(
                       <div className="text-red-600">
