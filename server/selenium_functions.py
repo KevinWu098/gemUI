@@ -27,9 +27,11 @@ def scrape(browser):
     return page_html
 
 def scrapeById(browser, id):
-    element = browser.find_element(By.ID, id)
-    return element
+    # iterate through each id, and get outer html if found
+    elements = [browser.find_element(By.ID, i).get_attribute('outerHTML') for i in id]
+    return elements
 
 def scrapeByXPath(browser, xpath):
-    element = browser.find_element(By.XPATH, xpath)
-    return element
+    # iterate through each xpath, and get outer html if found
+    xpaths = [browser.find_element(By.XPATH, i).get_attribute('outerHTML') for i in xpath]
+    return xpaths

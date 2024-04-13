@@ -75,24 +75,24 @@ async def websocket_endpoint(websocket: WebSocket, client_id: Optional[str] = No
                 selector_object = json.loads(selector_object)
 
                 # use the selector object to scrape the UI
-                element = None
+                elements = []
                 if (selector_object["type"] == "xpath"):
-                    element = scrapeByXPath(browser, selector_object["selector"])
+                    elements = scrapeByXPath(browser, selector_object["selector"])
                 elif (selector_object["type"] == "id"):
-                    element = scrapeById(browser, selector_object["selector"])
+                    elements = scrapeById(browser, selector_object["selector"])
                 elif (selector_object["type"] == "navigation"):
                     browser = navigate(browser, selector_object["url"])
                 else:
                     print(selector_object)
                 
-                if element:
+                if len(elements):
                     await manager.send_personal_message(
                                                   {
                                                       "event": "action",
                                                       "data": {
                                                           "messageToUser": "Dylan needs to prompt engineer",
                                                           "selectors": selector_object["selector"],
-                                                          "html": element,
+                                                          "html": elements,
                                                       }
                                                   }, websocket)
                 elif (selector_object["type"] == "navigation"):
