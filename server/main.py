@@ -5,7 +5,7 @@ import os
 import uvicorn
 from manager import manager
 from fastapi.websockets import WebSocket, WebSocketDisconnect
-from selenium_functions import navigate, open_browser
+from selenium_functions import navigate, open_browser, scrape
 
 from starlette.middleware.cors import CORSMiddleware
 from typing import Optional
@@ -58,6 +58,9 @@ async def websocket_endpoint(websocket: WebSocket, client_id: Optional[str] = No
                 url = data["url"]
                 print("Navigating to: ", url)
                 browser = navigate(browser, url)
+            elif (event == "scrape"):
+                print("Scraping...")
+                html = scrape(browser)
     except WebSocketDisconnect:
         print("Disconnecting...")
         await manager.disconnect(client_id)
