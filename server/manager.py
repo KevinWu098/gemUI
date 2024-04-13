@@ -1,5 +1,5 @@
 from typing import Dict
-from fastapi.websockets import WebSocket, WebSocketDisconnect
+from fastapi.websockets import WebSocket
 
 class ConnectionManager:
     # initializes ws and adds to active connections inside of a dictionary
