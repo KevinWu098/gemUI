@@ -16,6 +16,9 @@ def navigate(browser, url):
     browser.get(url)
     return browser
 
+def getUrl(browser):
+    return browser.current_url
+
 def scrape(browser):
     page_html = browser.page_source
      # save the html as a text file
