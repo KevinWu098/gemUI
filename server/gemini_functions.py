@@ -4,7 +4,7 @@ import ast
 import os
 
 load_dotenv()
-GEMINI_API_KEYS=os.environ.get('GEMINI_API_KEYS')
+GEMINI_API_KEYS = os.environ.get("GEMINI_API_KEYS")
 
 # convert the keys to a JSON list
 KEY_LIST = ast.literal_eval(GEMINI_API_KEYS)
@@ -15,7 +15,8 @@ current_api_key_index = 0
 # remember the previous messages
 messages = []
 
-def extractUI(prompt, url, html):
+
+def interpret(prompt, url, html):
     global current_api_key_index
     system_prompt = """
 You are a web browser navigation assistant that trims and scrapes relevant portions of the UI for a user.
@@ -26,19 +27,21 @@ You will only return path or id selectors. If the request requires multiple choi
 
 For example, if there is a container containing two buttons, and it is ambiguous which button the user is interested in, return a selector to the container instead of one of the buttons only.
 
-Output your result in a JSON format in the following:
+Output your result in one of the following formats:
 
-the type is:
-{
-  "type": string,
-  "selector": string[]
-}
+If the user is interested in a specific part of the UI, output your result in the following format:
+[
+    {
+        "type": either "xpath" or "id",
+        "selector": the selection string
+    },
+    {
+        "type": either "xpath" or "id",
+        "selector": the selection string
+    },
+]
 
-{
-   "type": either "xpath" or "id",
-   "selector": the selector or selectors
-}
-
+If the user asks for a navigation, output your result in the following format:
 {
     "type": "navigation",
     "url": url to navigate to
@@ -46,36 +49,37 @@ the type is:
 """
     genai.configure(api_key=KEY_LIST[current_api_key_index])
     model = genai.GenerativeModel(
-    model_name="gemini-1.5-pro-latest",
-    generation_config=genai.GenerationConfig(
-        max_output_tokens=4000,
-        temperature=0,
-    ),
-    system_instruction=system_prompt)
-    
-    # grab the previous conversation and add the new prompt
-    messages.append({
-        'role': 'user',
-        'parts': [
-prompt + """
-Current URL: """ + url + """
-HTML: """ + html + """
-"""
-        ]
-    })
-    response = model.generate_content(
-        messages
+        model_name="gemini-1.5-pro-latest",
+        generation_config=genai.GenerationConfig(
+            max_output_tokens=4000,
+            temperature=0,
+        ),
+        system_instruction=system_prompt,
     )
+
+    # grab the previous conversation and add the new prompt
+    messages.append(
+        {
+            "role": "user",
+            "parts": [
+                prompt
+                + """
+Current URL: """
+                + url
+                + """
+HTML: """
+                + html
+                + """
+"""
+            ],
+        }
+    )
+    response = model.generate_content(messages)
 
     print(response.text)
 
     # remember the response
-    messages.append({
-        'role': 'model',
-        'parts': [
-            response.text
-        ]
-    })
+    messages.append({"role": "model", "parts": [response.text]})
 
     # rotate API keys
     current_api_key_index += 1
