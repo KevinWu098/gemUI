@@ -1,37 +1,14 @@
-import express from "express";
-import dotenv from "dotenv";
-import cors from "cors";
-import http from "http";
-import { Server } from "socket.io";
+import { WebSocketServer } from "ws";
 
-// load up dotenv stuff
-dotenv.config();
+const wss = new WebSocketServer({ port: 8080 });
+// connect using ws://localhost:8080
 
-const app = express();
-const port = 5000;
+wss.on("connection", function connection(ws) {
+  ws.on("error", console.error);
 
-// create the http server
-const server = http.createServer(app);
+  ws.on("message", function message(data) {
+    console.log("received: %s", data);
+  });
 
-// create the socket server
-const io = new Server(server);
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(
-  cors({
-    origin: "*",
-  })
-);
-
-app.get("/", (req, res) => {
-  res.send("Hello World!");
-});
-
-io.on("connection", (socket) => {
-  console.log(`a user connected with id ${socket.id}`);
-});
-
-server.listen(port, () => {
-  console.log(`Example app listening on http://localhost:${port}`);
+  ws.send("something");
 });
