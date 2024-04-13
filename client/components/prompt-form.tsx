@@ -22,6 +22,8 @@ import { useTranscriber } from '@/hooks/useTranscriber'
 import { cn } from '@/lib/utils'
 import Transcript from './whisper/Transcript'
 
+import { Mic } from 'lucide-react'
+
 export function PromptForm({
   input,
   setInput
@@ -142,10 +144,13 @@ export function PromptForm({
         <Button
           variant="outline"
           size="icon"
-          className="absolute left-4 top-[14px] size-8 rounded-full bg-background p-0 sm:left-4"
+          className={cn(
+            'absolute left-4 top-[14px] size-8 rounded-full bg-background p-0 sm:left-4',
+            showAudio && 'ring-green-600 ring-2'
+          )}
           onClick={() => setShowAudio(p => !p)}
         >
-          <IconPlus />
+          <Mic className="size-4" />
           <span className="sr-only">New Chat</span>
         </Button>
 
