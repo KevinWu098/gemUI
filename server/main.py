@@ -5,12 +5,14 @@ import os
 import uvicorn
 from manager import manager
 from fastapi.websockets import WebSocket, WebSocketDisconnect
-from selenium_functions import navigate, open_browser, scrape
+from selenium_functions import getUrl, navigate, open_browser, scrape, scrapeById, scrapeByXPath
+from gemini_functions import extractUI
 
 from starlette.middleware.cors import CORSMiddleware
 from typing import Optional
+import json
+import asyncio
 
-load_dotenv()
 
 app = FastAPI()
 
@@ -54,13 +56,60 @@ async def websocket_endpoint(websocket: WebSocket, client_id: Optional[str] = No
             print(event)
             if (event == "start"):
                 browser = open_browser(browser)
-            elif (event == "navigate"):
-                url = data["url"]
-                print("Navigating to: ", url)
-                browser = navigate(browser, url)
-            elif (event == "scrape"):
-                print("Scraping...")
+            elif (event == "prompt"):
+                # scrape the HTML
                 html = scrape(browser)
+                print("Scraped HTML")
+                # TODO: feed image or video feed to gemini
+                # give the current URL to Gemini
+                url = getUrl(browser)
+                print("Got URL: ", url)
+                prompt = data["prompt"]
+                # give the HTML and the url to gemini
+                print("Extracting UI...")
+                selector_object = extractUI(prompt, url, html)
+
+                # clean up selector_object, remove the json and backticks
+                selector_object = selector_object.replace("`", "").replace("json", "")
+                # parse the selector object
+                selector_object = json.loads(selector_object)
+
+                # use the selector object to scrape the UI
+                element = None
+                if (selector_object["type"] == "xpath"):
+                    element = scrapeByXPath(browser, selector_object["selector"])
+                elif (selector_object["type"] == "id"):
+                    element = scrapeById(browser, selector_object["selector"])
+                elif (selector_object["type"] == "navigation"):
+                    browser = navigate(browser, selector_object["url"])
+                else:
+                    print(selector_object)
+                
+                if element:
+                    await manager.send_personal_message(
+                                                  {
+                                                      "event": "action",
+                                                      "data": {
+                                                          "messageToUser": "Dylan needs to prompt engineer",
+                                                          "selectors": selector_object["selector"],
+                                                          "html": element,
+                                                      }
+                                                  }, websocket)
+                elif (selector_object["type"] == "navigation"):
+                    await manager.send_personal_message({"event": "thought", "data": {
+                        "thought": "I just navigated to " + selector_object["url"]
+                    }}, websocket)
+                else:
+                    await manager.send_personal_message({"event": "thought", "data": {
+                        "thought": "I couldn't interact with the browser properly."
+                    }}, websocket)
+            # elif (event == "navigate"):
+            #     url = data["url"]
+            #     print("Navigating to: ", url)
+            #     browser = navigate(browser, url)
+            # elif (event == "scrape"):
+            #     print("Scraping...")
+            #     html = scrape(browser)
     except WebSocketDisconnect:
         print("Disconnecting...")
         await manager.disconnect(client_id)
