@@ -10,8 +10,10 @@ dotenv.config();
 const app = express();
 const port = 5000;
 
-// create the socket server
+// create the http server
 const server = http.createServer(app);
+
+// create the socket server
 const io = new Server(server);
 
 app.use(express.json());
@@ -30,6 +32,6 @@ io.on("connection", (socket) => {
   console.log(`a user connected with id ${socket.id}`);
 });
 
-app.listen(port, () => {
+server.listen(port, () => {
   console.log(`Example app listening on http://localhost:${port}`);
 });
