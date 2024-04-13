@@ -48,7 +48,7 @@ async def websocket_endpoint(websocket: WebSocket, client_id: Optional[str] = No
         return
     # save this client into server memory
     await manager.connect(websocket, client_id)      
-    browser = None
+    browser = open_browser(browser)
     try:
         while True:
             data = await websocket.receive_json()
@@ -66,7 +66,7 @@ async def websocket_endpoint(websocket: WebSocket, client_id: Optional[str] = No
                 print("Got URL: ", url)
                 prompt = data["prompt"]
                 # give the HTML and the url to gemini
-                print("Extracting UI...")
+                print("Gemini is thinking...")
                 selector_object = extractUI(prompt, url, html)
 
                 # clean up selector_object, remove the json and backticks
