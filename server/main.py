@@ -122,26 +122,26 @@ async def navigate_ui(browser, websocket):
         url = getUrl(browser)
         print("Got URL: ", url)
 
-    # give the HTML and the url to gemini
-    print("Gemini is interpreting...")
-    selectors = interpret(active_prompt, url, html, img)
-
-    if type(selectors) != list and selectors["type"] == "navigate":
-        navigate(browser, selectors["url"])
-        print("Navigating to ", selectors["url"])
-        sleep(1.5)
-        url = getUrl(browser)
-        print("Got URL: ", url)
-        html = scrape(browser)
-        take_screenshot(browser)
-        img = PIL.Image.open("website.png")
-
+        # give the HTML and the url to gemini
         print("Gemini is interpreting...")
         selectors = interpret(active_prompt, url, html, img)
 
+        if type(selectors) != list and selectors["type"] == "navigate":
+            navigate(browser, selectors["url"])
+            print("Navigating to ", selectors["url"])
+            sleep(1.5)
+            url = getUrl(browser)
+            print("Got URL: ", url)
+            html = scrape(browser)
+            take_screenshot(browser)
+            img = PIL.Image.open("website.png")
+
+            print("Gemini is interpreting...")
+            selectors = interpret(active_prompt, url, html, img)
+
         print("Gemini is generating...")
         generated_ui = generate(html, selectors, url)
-    print(generated_ui)
+        print(generated_ui)
         print("Gemini is done...")
 
         await manager.send_personal_message(
