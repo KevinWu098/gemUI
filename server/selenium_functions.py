@@ -97,18 +97,24 @@ def remove_non_content_tags(html_string):
         "meta",
         "title",
     ]
-    
+
+    # Pattern to remove HTML comments
+    comments_pattern = r'<!--.*?-->'
+
+    # Remove HTML comments
+    html_string = re.sub(comments_pattern, '', html_string, flags=re.DOTALL)
+
     # Create a regular expression pattern that matches the specified tags
-    # The pattern will look for the opening tag, any content (including nested tags), and the closing tag
     pattern = r'<({0})\b[^>]*>(.*?)</\1>'.format('|'.join(nonContentTags))
-    
+
     # Use re.DOTALL to ensure that the dot (.) in the regular expression matches newlines as well
     # Use re.IGNORECASE to make the pattern case insensitive
     # Keep removing tags until there are none left
     while re.search(pattern, html_string, re.DOTALL | re.IGNORECASE):
         html_string = re.sub(pattern, '', html_string, flags=re.DOTALL | re.IGNORECASE)
-    
+
     # Remove any remaining self-closing non-content tags (e.g., <br/>)
     self_closing_pattern = r'<({0})\b[^>]*/>'.format('|'.join(nonContentTags))
     html_string = re.sub(self_closing_pattern, '', html_string, flags=re.IGNORECASE)
+
     return html_string
