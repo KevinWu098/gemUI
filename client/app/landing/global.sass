@@ -1,0 +1,188 @@
+//* root element styling
+//! personalize
+$bg: #F7F6FA
+$text-color: #2B2B2B
+$prim: #9F03FE
+$hover-prim: #8200D1
+$hover-sec: darkgrey 
+$sec: #F5F4F7
+$hover-sec: #EDEDED
+$border: 3px solid #DEDEDE
+$card: #DEDEDE
+
+$text-color: #2B2B2B
+$p-color: #646464
+$input-color: #A5A5A5
+
+// layout
+$small-border: 12px
+$h1_header: 72px
+$h2: 18px
+
+html,
+body  
+  margin: 0 
+  background-color: $bg
+  overflow-x: hidden 
+  font-family: 'Inter', sans-serif
+ 
+h1
+    font-size: $h1_header
+    font-weight: 600
+    color: $text-color
+    margin: 0 
+    padding: 0 
+    line-height: 1.2em
+
+ 
+//* buttons
+button  
+  border: 0 
+  outline: 0 
+  cursor: pointer 
+  &:hover  
+   
+  &:focus  
+   
+  &:active  
+   
+ 
+
+//* reuseable props
+@mixin grid  
+  display: grid 
+  place-content: center 
+ 
+@mixin grid-row  
+  @include grid 
+  display: grid 
+  grid-template-columns: repeat(3, 1fr) 
+  align-items: center 
+  justify-content: center 
+  justify-items: center
+
+
+ 
+@mixin grid-column  
+  @include grid 
+  display: grid 
+  grid-template-columns: auto 
+  align-items: center 
+  justify-content: center 
+ 
+
+@mixin flex  
+  display: flex 
+  justify-content: center 
+  align-items: center 
+ 
+@mixin flex-row  
+  @include flex 
+  flex-direction: row 
+  justify-content: space-between 
+ 
+@mixin flex-column  
+  @include flex 
+  flex-direction: column 
+ 
+
+//* general formatting
+
+section,
+.container  
+  @include grid 
+ 
+.flex-row  
+  @include flex 
+  @include flex-row 
+ 
+.flex-column  
+  @include flex 
+  @include flex-column 
+ 
+.grid-row  
+  @include grid 
+  @include grid-row 
+ 
+.grid-column  
+  @include grid 
+  @include grid-column 
+ 
+
+
+
+//* reusable components
+//* regular button
+button  
+  @include grid 
+  cursor: pointer 
+  padding: 12px 18px 
+  white-space: nowrap 
+  outline: none 
+  border: none 
+  font-size: $h2
+  font-weight: 600
+  border-radius: $small-border
+  &.primary  
+    background-color: $prim 
+    color: white
+    
+    &:hover  
+      background-color: $hover-prim 
+     
+   
+  &.secondary  
+    background-color: $sec 
+    color: $text-color
+    border: $border
+    &:hover  
+      background-color: $hover-sec 
+     
+   
+ 
+
+//* button with outline
+
+
+//* nav
+.nav-contain
+    padding: 22px
+    width: 100vw
+    position: fixed
+    
+nav  
+  width: fit-content
+  height: fit-content 
+  font-size: $h2
+  font-weight: 400
+  color: $text-color
+  background-color: #fff
+  padding: 12px
+  border-radius: 100px
+  border: $border
+  backdrop-filter: blur(10px)
+  
+  ul  
+    margin: 0 
+    padding: 0 
+    list-style: none 
+  li  
+
+
+  a  
+    display: block 
+    padding: 6px 12px 
+    border-radius: 100px
+    text-decoration: none 
+    transition: background-color 200ms ease
+    width: fit-content
+    &:hover  
+      background-color: $prim 
+      color: white
+      cursor: pointer
+   
+//* hero
+.hero
+    @include grid
+    width: 100vw
+    height: 100vh

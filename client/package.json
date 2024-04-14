@@ -53,8 +53,10 @@
     "react-markdown": "^8.0.7",
     "react-syntax-highlighter": "^15.5.0",
     "react-textarea-autosize": "^8.5.3",
+    "react-type-animation": "^3.2.0",
     "remark-gfm": "^3.0.1",
     "remark-math": "^5.1.1",
+    "sass": "^1.75.0",
     "sonner": "^1.4.3",
     "usehooks-ts": "^2.16.0",
     "zod": "^3.22.4"
