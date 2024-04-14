@@ -24,24 +24,30 @@ messages = []
 system_prompt_interpret = """
 You are a web browser navigation assistant that trims and scrapes relevant portions of the UI for a user.
 
-Whenever a user requests something, you will return a navigator action to switch URLs, or an xpath or id selector to the relevant parts of the UI for a user to look at.
+Whenever a user requests something, you will return an xpath selector, id selector, or src attribute of an image that is relevant to the user.
 
 You will only return path or id selectors. If the request requires multiple choices, return ALL RELEVANT selectors that contains the UI that will enable the user to choose the choice themselves.
 
 For example, if there is a container containing two buttons, and it is ambiguous which button the user is interested in, return a selector to the container instead of one of the buttons only.
+
+If there are images that are relevant to the user, return the src attribute of the image.
 
 Output your result in the following format:
 
 If the user is interested in a specific part of the UI, output your result in the following format:
 [
     {
-        "type": either "xpath" or "id",
+        "type": xpath
         "selector": the selection string
     },
     {
-        "type": either "xpath" or "id",
+        "type": id
         "selector": the selection string
     },
+    {
+        "type": src
+        "selector": the src attribute of the image
+    }
 ]
 """
 
@@ -50,16 +56,17 @@ You are a web browser navigation assistant that generates a user interface for a
 You will be given DOM elements from another web browser navigation assistant that trims and scrapes relevant portions of the UI for a user.
 
 Your task is to generate valid HTML strings that can be rendered in a browser, specifically focusing on interactive elements such as buttons and text fields. 
-Please use TailwindCSS for styling. Use the attached branding guide as a reference for the styling.
-Use the typographies and hex colors provided in the branding guide.
+Please use TailwindCSS for styling.
 
 Each element should only have two attributes:
 - class: a string of classes separated by spaces, for TailwindCSS styling
 - special-id: the XPath or id selector that was given to you, which will be used for identifying the element during interactions
-- type: a string that is either 'text' or 'button' or 'input'
+- type: a string that is either 'text', 'button', 'input', or 'img'
+
+Only output images if they are contained in the DOM elements that were given to you.
 
 Output your result in the following format:
-<div>
+<div class='container classes here'>
     <div type='text' class='input classes here'>
         <!-- Additional content here -->
     </div>
@@ -67,6 +74,7 @@ Output your result in the following format:
         <!-- Additional content here -->
     </div>
     <input type='input' class='input classes here' special-id='input selector here'>
+    <img type='img' class='img classes here' src='image source here'>
 </div>
 """
 
@@ -117,6 +125,9 @@ current_screenshot is attached
     # Generate content using the prompt and the website HTML
     response = generate_content_with_cycling_keys(user_prompt, system_prompt_interpret, img)
 
+    if "```json" in response:
+        response = response.split("```json")[1].split("```")[0]
+
     # example: 
     # [{'type': 'xpath',
     #   'selector': '//a[@data-quid="start-your-order-delivery-cta"]'},
@@ -151,7 +162,10 @@ def generate(html, selectors):
             dom_elements += extract_elements_by_xpath(html, element["selector"])
             dom_elements += "\n"
         elif element['type'] == 'id':
+            print("ID selector not handled yet")
             pass
+        else:
+            dom_elements += f"src: {element['selector']}\n"
     design = PIL.Image.open("design.png")
     generated_ui = generate_content_with_cycling_keys(
         "Use the attached branding guide to style the output. Use the typographies and hex codes defined in the image\n"
