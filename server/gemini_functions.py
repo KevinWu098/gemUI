@@ -135,7 +135,7 @@ current_screenshot is attached
     )
 
     # remember the response
-    messages.append({"role": "model", "parts": [response.text]})
+    messages.append({"role": "model", "parts": [response]})
 
 
     # return the selector object
