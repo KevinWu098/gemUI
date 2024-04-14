@@ -10,7 +10,7 @@ def open_browser(browser=None):
     options.add_experimental_option("detach", True)
 
     browser = webdriver.Chrome(options=options)
-    browser.get('https://developer.chrome.com/')
+    browser.get('https://myquest.questdiagnostics.com/web/home')
     return browser
 
 def navigate(browser, url):
@@ -54,7 +54,12 @@ def take_screenshot(browser):
     screenshot = browser.save_screenshot("website.png")
 
 def click(browser, selector):
-    browser.find_element(By.XPATH, selector).click()
+    try:
+        browser.find_element(By.XPATH, selector).click()
+    except Exception as e:
+        # error in clicking
+        print(e)
+        print("Error in clicking", selector)
 
 def selenium_type(browser, selector, text):
     browser.find_element(By.XPATH, selector).send_keys(text)
@@ -62,12 +67,12 @@ def selenium_type(browser, selector, text):
 def trimHTML(browser):
     nonContentTags = [
             "SCRIPT",
-            "STYLE",
+            # "STYLE",
             "NOSCRIPT",
             "BR",
             "HR",
-            "HEAD",
-            "LINK",
+            # "HEAD",
+            # "LINK",
             "META",
             "TITLE",
         ]

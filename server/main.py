@@ -111,15 +111,16 @@ if __name__ == "__main__":
 
 
 async def navigate_ui(browser, websocket):
-    global active_prompt
-    # scrape the HTML
-    html = scrape(browser)
-    print("Scraped HTML")
-    take_screenshot(browser)
-    img = PIL.Image.open("website.png")
-    # give the current URL to Gemini
-    url = getUrl(browser)
-    print("Got URL: ", url)
+    try:
+        global active_prompt
+        # scrape the HTML
+        html = scrape(browser)
+        print("Scraped HTML")
+        take_screenshot(browser)
+        img = PIL.Image.open("website.png")
+        # give the current URL to Gemini
+        url = getUrl(browser)
+        print("Got URL: ", url)
 
     # give the HTML and the url to gemini
     print("Gemini is interpreting...")
@@ -138,17 +139,19 @@ async def navigate_ui(browser, websocket):
         print("Gemini is interpreting...")
         selectors = interpret(active_prompt, url, html, img)
 
-    print("Gemini is generating...")
-    generated_ui = generate(html, selectors, url)
+        print("Gemini is generating...")
+        generated_ui = generate(html, selectors, url)
     print(generated_ui)
-    print("Gemini is done...")
+        print("Gemini is done...")
 
-    await manager.send_personal_message(
-        {
-            "event": "ui",
-            "data": {
-                "html": generated_ui,
+        await manager.send_personal_message(
+            {
+                "event": "ui",
+                "data": {
+                    "html": generated_ui,
+                },
             },
-        },
-        websocket,
-    )
+            websocket,
+        )
+    except Exception as e:
+        print(e)
