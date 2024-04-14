@@ -87,17 +87,20 @@ Plan:
 - I am already on the page
 - I will select some of the important elements on the page
 ```json
-[
-    {
-        "type": xpath
-        "selector": login button
-    },
-    {
-        "type": xpath
-        "selector": schedule button
-    },
-    ...
-]
+{
+    type: "selectors",
+    selectors: [
+        {
+            "type": xpath
+            "selector": login button
+        },
+        {
+            "type": xpath
+            "selector": schedule button
+        },
+        ...
+    ]
+}
 ```
 
 ## If the user asks for specific elements on the page, output the selectors for those elements:
@@ -110,17 +113,20 @@ Plan:
 - I need to select the button that will allow the user to navigate to the attraction page.
 
 ```json
-[
-    {
-        "type": xpath
-        "selector": selector
-    },
-    {
-        "type": src
-        "selector": the src attribute of the image represented as the route to the image inside of the client file of the website
-    },
-    ...
-]
+{
+    type: "selectors",
+    selectors: [
+        {
+            "type": xpath
+            "selector": selector
+        },
+        {
+            "type": src
+            "selector": the src attribute of the image represented as the route to the image inside of the client file of the website
+        },
+        ...
+    ]
+}
 ```
 
 The selectors should only be for button, input, or text elements.

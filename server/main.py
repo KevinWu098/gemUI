@@ -126,7 +126,7 @@ async def navigate_ui(browser, websocket):
         print("Gemini is interpreting...")
         selectors = interpret(active_prompt, url, html, img)
 
-        if type(selectors) != list and selectors["type"] == "navigate":
+        if selectors["type"] == "navigate":
             navigate(browser, selectors["url"])
             print("Navigating to ", selectors["url"])
             sleep(1.5)
@@ -140,7 +140,7 @@ async def navigate_ui(browser, websocket):
             selectors = interpret(active_prompt, url, html, img)
 
         print("Gemini is generating...")
-        generated_ui = generate(html, selectors, url)
+        generated_ui = generate(html, selectors["selectors"], url)
         print(generated_ui)
         print("Gemini is done...")
 
