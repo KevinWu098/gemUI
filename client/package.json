@@ -39,6 +39,7 @@
     "focus-trap-react": "^10.2.3",
     "framer-motion": "^10.18.0",
     "geist": "^1.2.1",
+    "html-react-parser": "^5.1.10",
     "lucide-react": "^0.368.0",
     "nanoid": "^5.0.4",
     "next": "14.1.3",
