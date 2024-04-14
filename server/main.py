@@ -119,6 +119,9 @@ async def websocket_endpoint(websocket: WebSocket, client_id: Optional[str] = No
                     },
                     websocket
                 )
+            elif (event == "debug"):
+                elements = scrapeByXPath(browser, [data["xpath"]])
+                print(elements)
     except WebSocketDisconnect:
         print("Disconnecting...")
         await manager.disconnect(client_id)
