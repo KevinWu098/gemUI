@@ -2,9 +2,6 @@
 
 import { ChatList } from '@/components/chat-list'
 import { ChatPanel } from '@/components/chat-panel'
-import { EmptyScreen } from '@/components/empty-screen'
-import { ListFlights } from '@/components/flights/list-flights'
-import { ListHotels } from '@/components/hotels/list-hotels'
 import { Message } from '@/lib/chat/actions'
 import { useLocalStorage } from '@/lib/hooks/use-local-storage'
 import { useScrollAnchor } from '@/lib/hooks/use-scroll-anchor'
@@ -65,10 +62,11 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
       ref={scrollRef}
     >
       <div className={cn('pb-[200px] pt-4', className)} ref={messagesRef}>
-        {messages.length ? (
-          <ChatList messages={messages} isShared={false} session={session} />
-        ) : null
-        // <EmptyScreen />
+        {
+          messages.length ? (
+            <ChatList messages={messages} isShared={false} session={session} />
+          ) : null
+          // <EmptyScreen />
         }
         <div className="h-px w-full" ref={visibilityRef} />
       </div>
