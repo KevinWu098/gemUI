@@ -28,7 +28,7 @@ export interface ChatPanelProps {
 export interface UserMessage {
   event: 'userAction'
   id: string
-  element: 'button'
+  element: 'button' | 'input'
   value: string | undefined
 }
 
@@ -157,22 +157,55 @@ export function ChatPanel({
       )
     }
 
+    const handleChange = (event: any) => {
+      const id = event.target.getAttribute('special-id')
+      console.log('changed', id, event)
+
+      if (!socket) {
+        console.warn('No socket to send handleChange')
+        return
+      }
+
+      sendSocketMessage(
+        socket,
+        {
+          event: 'userAction',
+          id: id,
+          element: 'input',
+          value: event.currentTarget.value
+        },
+        loading
+      )
+    }
+
     if (!containerRef.current) {
       return
     }
 
     const clickables =
       containerRef.current.querySelectorAll('button[special-id]')
-    // console.log(containerRef.current, clickables)
+    const inputtables =
+      containerRef.current.querySelectorAll('input[special-id]')
+    // console.log(containerRef.current, clickables, inputtables)
 
     clickables.forEach((clickable: Element) => {
-      console.log(clickable)
+      console.log('clickable:', clickable)
       clickable.addEventListener('click', handleClick)
+    })
+
+    inputtables.forEach((inputtable: Element) => {
+      console.log('inputtable:', inputtable)
+      inputtable.addEventListener('change', handleChange)
     })
 
     return () => {
       clickables.forEach((clickable: Element) => {
         clickable.removeEventListener('click', handleClick)
+      })
+
+      inputtables.forEach((inputtable: Element) => {
+        console.log('inputtable:', inputtable)
+        inputtable.removeEventListener('change', handleChange)
       })
     }
   }, [loading, messages, socket])
