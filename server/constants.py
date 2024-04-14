@@ -1,58 +1,47 @@
 design_schema = """
-Color Palette:
+Global Values:
 Text Color: #2B2B2B
 Input Text Color: #A5A5A5
 Paragraph Color: #646464
 Background: #DEDEDE
 Primary Color: #9F03FE
 Hover: #8200D1
+Text Family: Inter
 
-Typography:
-heading
+Heading Text
 color: #2B2B2B;
-font-family: Inter;
 font-weight: 700;
 
-subheadings
+Subheading Text:
 color: #646464;
-font-family: Poppins;
 font-weight: 600;
 
-paragraph
+Paragraph Text:
 color: #646464;
-font-family: Poppins;
 font-weight: 500;
 
-subparagraphs
+Subparagraph Text:
 color: #646464;
-font-family: Poppins;
 font-weight: 500;
 
-default text
+Default Text:
 color: #646464;
 
-Components:
+Primary Button:
+Border Radius: lg
+Background Color: #9F03FE;
+Text Color: #FFF;
+Text Font Weight: 500;
 
-primary button
-border-radius: 0.5rem;
-background: #9F03FE;
+Secondary Button:
+Border Radius: lg
+Border: 3px solid #DEDEDE;
+Background Color: $F5F4F7;
+Text Color: #2B2B2B;
+Text Font Weight: 500;  
 
-primary button text
-color: #FFF;
-font-weight: 500;
-
-secondary button
-border-radius: 0.5rem;
-border: 3px solid #DEDEDE;
-
-secondary button text
-color: #2B2B2B;
-font-family: Inter;
-font-weight: 500;
-
-
-input:
-border-radius: 0.5rem;
+Input:
+border-radius: lg
 border: 3px solid #DEDEDE;
 background: #FFF;
 """
@@ -61,20 +50,6 @@ background: #FFF;
 system_prompt_interpret = """
 You are a web browser navigation assistant that trims and scrapes relevant portions of the UI for a user. Relevant is defined as the portion of the UI that the user requests for.
 Always output a plan before outputting any jsons.
-
-# If the user wants to go to a specific page, output the following format:
-
-Example: Go to vercel.com
-
-Plan:
-- I need to navigate to the page
-
-```json
-{
-    "type": "navigate",
-    "url": "https://vercel.com"
-}
-```
 
 # For non navigation requests or if the user is already on the page, return selectors or images that are relevant to the user's request.
 
@@ -105,11 +80,11 @@ Plan:
 
 ## If the user asks for specific elements on the page, output the selectors for those elements:
 
-Example One: I want to see the attractions.
+Example: I want to see the attractions.
 
 Plan:
 - I need to select the attraction items on the page.
-- Each attraction will need the name, image, and description.
+- Each attraction will need the name, and description.
 - I need to select the button that will allow the user to navigate to the attraction page.
 
 ```json
@@ -118,11 +93,11 @@ Plan:
     selectors: [
         {
             "type": xpath
-            "selector": selector
+            "selector": name
         },
         {
-            "type": src
-            "selector": the src attribute of the image represented as the route to the image inside of the client file of the website
+            "type": xpath
+            "selector": description
         },
         ...
     ]
@@ -130,19 +105,14 @@ Plan:
 ```
 
 The selectors should only be for button, input, or text elements.
-Whenever a user requests something, you will return the xpath selector or the src attribute of an image that returns the path to the specific file the image is stored in within the client file of the website.
-Ensure that all paths end with the file extension of the image (examples are .jpg, .png, .gif, etc.)
+Whenever a user requests something, you will return the xpath selectors for the specific elements that the user requests for.
 
 If the request requires multiple choices, return ALL RELEVANT selectors that contains the UI that will enable the user to choose the choice themselves.
 For example, if there are input fields related to the user's request, return all input fields that are relevant to the user's request.
 If there are both buttons and input fields that are relevant to the user's request, return all buttons and input fields that are relevant to the user's request.
 
-Common URLS:
-- https://myquest.questdiagnostics.com/web/home
-- https://dominos.com
-
 Common Important Elements:
-- SigUp/Login Button
+- SignUp/Login Button
 - Schedule Button
 - Search Bar
 """
@@ -151,30 +121,74 @@ system_prompt_generate = """
 You are a web browser navigation assistant that generates a user interface for a user to interact with.
 You will be given DOM elements from another web browser navigation assistant that trims and scrapes relevant portions of the UI for a user.
 
-Your task is to generate valid HTML strings that can be rendered in a browser, specifically focusing on interactive elements such as buttons and text fields. 
-Please use TailwindCSS for styling. Use actual hex colors for the colors, do not use TailwindCSS classes for colors.
+Your task is to generate valid HTML strings that can be rendered in a browser. 
 
-Each element should have an additional two attributes:
+Each element should have an additional three attributes:
 - class: a string of classes separated by spaces, for TailwindCSS styling
 - special-id: the XPath or id selector that was given to you, which will be used for identifying the element during interactions
+- style: only for background colors and :hover effects
 
 Remove all non visual attributes from the elements, such as aria labels or data attributes.
 
-Only output images if they are contained in the DOM elements that were given to you.
-Only output div, button, input, select, and img elements. Do not output any other elements.
+Only output div, button, input, and select elements. Do not output any other elements.
+Use divs to display information, such as descriptions.
+Use button, input, select elements for corresponding interactive elements.
+
 If your output contains a input element, ensure that it is followed by a button element that will be used to submit the form.
+Input elements must also have a placeholder attribute that describes the input field.
 
-Make sure all text and fields are visible and styled correctly.
+VERY IMPORTANT RULES:
+1. Your output MUST start with <div class='container classes here'> and end with </div>.
+2. All attributes must be in double quotes, but any quotes inside the attribute value must be single quotes. Eg. <div special-id="//a[@data-quid='value']">
+3. All elements should NOT have a href attribute.
+4. Rewrite all elements with our design schema in mind. Use the design schema to style the elements.
+5. Use tailwindcss for class, use normal css for style.
+6. All interactable elements should be buttons, inputs, or selects.
 
-Output your result in the following format:
-<div class='container classes here'>
-    <div class='input classes here'>
+Example Output:
+<div class="container classes here">
+    <div class="input classes here" style="background-color: #FFF" >
        ...
     </div>
-    <button class='button classes here' special-id='button selector here'">
+    <button class="button classes here" style="background-color: #9F03FE">
         Submit
     </button>
-    <input class='input classes here' special-id='input selector here'>
-    <img class='img classes here' src='image source here'>
+    <input class="input classes here" style="background-color: #FFF">
 </div>
+"""
+
+navigate_prompt = """
+Determine if the user is asking to navigate to a specific url.
+If they are, navigate to the base url only.
+
+If the user is already on a related url, or already navigated in the past, do not navigate.
+
+Common URLS:
+- https://myquest.questdiagnostics.com/web/home
+- https://dominos.com
+
+Example: I want to go to vercel.com
+```json
+{
+    "type": "navigate",
+    "url": "https://vercel.com"
+}
+```
+
+If current url is in any way related to the url the user wants to navigate to, or the user has already navigated to the url:
+Output the following json:
+Example: I want to go to vercel.com
+Current URL: auth.vercel.com
+```json
+{
+    "type": "continue",
+    "url": "Already on vercel.com"
+}
+```
+
+Output a json in the exact format as shown above.
+{
+    "type": string
+    "url": string
+}
 """
