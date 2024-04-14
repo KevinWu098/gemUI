@@ -1,3 +1,4 @@
+from time import sleep
 from fastapi import FastAPI
 from pydantic import BaseModel
 from dotenv import load_dotenv
@@ -69,33 +70,7 @@ async def websocket_endpoint(websocket: WebSocket, client_id: Optional[str] = No
             if event == "start":
                 browser = open_browser(browser)
             elif event == "prompt":
-                # scrape the HTML
-                html = scrape(browser)
-                print("Scraped HTML")
-                take_screenshot(browser)
-                img = PIL.Image.open("website.png")
-                # give the current URL to Gemini
-                url = getUrl(browser)
-                print("Got URL: ", url)
-                prompt = data["prompt"]
-
-                # give the HTML and the url to gemini
-                print("Gemini is interpreting...")
-                selectors = interpret(prompt, url, html, img)
-
-                print("Gemini is generating...")
-                generated_ui = generate(html, selectors)
-                print("Gemini is done...")
-
-                await manager.send_personal_message(
-                    {
-                        "event": "ui",
-                        "data": {
-                            "html": generated_ui,
-                        }
-                    },
-                    websocket
-                )
+                await navigate_ui(browser)
                 
             elif (event == "userAction"):
                 selector = data["id"]        # will be used to query
@@ -107,6 +82,8 @@ async def websocket_endpoint(websocket: WebSocket, client_id: Optional[str] = No
 
                 if element == "button":
                     click(browser, selector)
+                    sleep(1.5)
+                    await navigate_ui(browser)
                 elif element == "input":
                     selenium_type(browser, selector, value)
                 else:
@@ -131,3 +108,32 @@ if __name__ == "__main__":
     # uvicorn main:app --reload
     # ws://localhost:8000/ws?client_id=123
     uvicorn.run(app, host="0.0.0.0", port=10000)
+
+async def navigate_ui(browser):
+    # scrape the HTML
+    html = scrape(browser)
+    print("Scraped HTML")
+    take_screenshot(browser)
+    img = PIL.Image.open("website.png")
+    # give the current URL to Gemini
+    url = getUrl(browser)
+    print("Got URL: ", url)
+    prompt = data["prompt"]
+
+    # give the HTML and the url to gemini
+    print("Gemini is interpreting...")
+    selectors = interpret(prompt, url, html, img)
+
+    print("Gemini is generating...")
+    generated_ui = generate(html, selectors)
+    print("Gemini is done...")
+
+    await manager.send_personal_message(
+        {
+            "event": "ui",
+            "data": {
+                "html": generated_ui,
+            }
+        },
+        websocket
+    )
