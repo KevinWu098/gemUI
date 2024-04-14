@@ -11,7 +11,7 @@ export interface ChatList {
 
 export function ChatList({ messages, session, isShared }: ChatList) {
   return messages.length ? (
-    <div className="relative mx-auto max-w-2xl grid auto-rows-max gap-8 px-4">
+    <div className="relative mx-auto max-w-2xl grid auto-rows-max gap-8 px-4 pt-16">
       {!isShared && !session ? (
         <>
           <div className="group relative flex items-start md:-ml-12">
@@ -36,7 +36,6 @@ export function ChatList({ messages, session, isShared }: ChatList) {
       ) : null}
 
       {messages.map(message => {
-        console.log(message)
         return (
           <div key={message.id}>
             {message.spinner}

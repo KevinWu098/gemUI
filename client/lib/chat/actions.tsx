@@ -6,13 +6,11 @@ import 'server-only'
 
 import { createAI, getAIState } from 'ai/rsc'
 
-import { nanoid, sleep } from '@/lib/utils'
+import { nanoid } from '@/lib/utils'
 import { saveChat } from '@/app/actions'
 import { BotMessage, UserMessage } from '@/components/messages/message'
 import { Chat } from '../types'
 import { auth } from '@/auth'
-
-import { GoogleGenerativeAI } from '@google/generative-ai'
 
 export type Message = {
   role: 'user' | 'assistant' | 'system' | 'function' | 'data' | 'tool'
