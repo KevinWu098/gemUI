@@ -10,7 +10,7 @@ import { ChatShareDialog } from '@/components/chat-share-dialog'
 import { useAIState, useActions, useUIState } from 'ai/rsc'
 import type { AI } from '@/lib/chat/actions'
 import { nanoid } from 'nanoid'
-import { BotThought, BotUI, UserMessage } from './stocks/message'
+import { BotThought, BotUI, UserMessage } from './messages/message'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 
@@ -112,7 +112,7 @@ export function ChatPanel({
   const [socket, setSocket] = React.useState<WebSocket>()
   const [loading, setLoading] = React.useState(false)
 
-  const DUMMY_MODE = false
+  const DUMMY_MODE = true
 
   React.useEffect(() => {
     if (DUMMY_MODE) return
