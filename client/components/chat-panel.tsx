@@ -49,9 +49,9 @@ export interface ServerMessage {
 
 const exampleMessages = [
   {
-    heading: 'See Overdue Vaccinations',
-    subheading: "on UCI Health's dashboard",
-    message: `Login to UCI Health's dashboard`
+    heading: 'See upcoming Blood Work',
+    subheading: "on Quest Diagnostic's MyQuest dashboard",
+    message: `Go to Quest Diagnostic's MyQuest dashboard`
   },
   {
     heading: 'Order a Pepperoni Pizza online',

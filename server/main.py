@@ -142,7 +142,7 @@ async def navigate_ui(browser, websocket):
                 {
                     "event": "thought",
                     "data": {
-                        "thought": "I'm navigating to" + selectors["url"],
+                        "thought": "I'm navigating to " + selectors["url"],
                     },
                 },
                 websocket,
