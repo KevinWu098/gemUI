@@ -2,7 +2,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from lxml import html
-
+import re
 
 def open_browser(browser=None):
     if browser:
@@ -25,10 +25,10 @@ def getUrl(browser):
 
 
 def scrape(browser):
-    # trim it
-    trimHTML(browser)
     # scrape it
     page_html = browser.page_source
+    # trim it
+    page_html = trimHTML(page_html)
     # save the html as a text file
     with open("output.html", "w", encoding="utf-8") as f:
         f.write(page_html)
@@ -80,27 +80,41 @@ def selenium_type(browser, selector, text):
     browser.find_element(By.XPATH, selector).send_keys(text)
 
 
-def trimHTML(browser):
+def trimHTML(html_string):
+    html_string = remove_non_content_tags(html_string)
+    
+    return html_string
+
+def remove_non_content_tags(html_string):
     nonContentTags = [
-        "SCRIPT",
-        # "STYLE",
-        "NOSCRIPT",
-        "BR",
-        "HR",
-        # "HEAD",
-        # "LINK",
-        "META",
-        "TITLE",
+        "script",
+        "style",
+        "noscript",
+        "br",
+        "hr",
+        "head",
+        "link",
+        "meta",
+        "title",
     ]
-    # Remove the specified tags from the page
-    for tag in nonContentTags:
-        # Find elements by tag name and remove each one
-        elements = browser.find_elements(By.TAG_NAME, tag)
-        for element in elements:
-            browser.execute_script(
-                """
-                var element = arguments[0];
-                element.parentNode.removeChild(element);
-                """,
-                element,
-            )
+
+    # Pattern to remove HTML comments
+    comments_pattern = r'<!--.*?-->'
+
+    # Remove HTML comments
+    html_string = re.sub(comments_pattern, '', html_string, flags=re.DOTALL)
+
+    # Create a regular expression pattern that matches the specified tags
+    pattern = r'<({0})\b[^>]*>(.*?)</\1>'.format('|'.join(nonContentTags))
+
+    # Use re.DOTALL to ensure that the dot (.) in the regular expression matches newlines as well
+    # Use re.IGNORECASE to make the pattern case insensitive
+    # Keep removing tags until there are none left
+    while re.search(pattern, html_string, re.DOTALL | re.IGNORECASE):
+        html_string = re.sub(pattern, '', html_string, flags=re.DOTALL | re.IGNORECASE)
+
+    # Remove any remaining self-closing non-content tags (e.g., <br/>)
+    self_closing_pattern = r'<({0})\b[^>]*/>'.format('|'.join(nonContentTags))
+    html_string = re.sub(self_closing_pattern, '', html_string, flags=re.IGNORECASE)
+
+    return html_string

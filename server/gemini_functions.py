@@ -38,6 +38,7 @@ def cycle_api_key():
 
 def generate_content_with_cycling_keys(prompt, system_prompt, image=None):
     global current_api_key_index
+    global messages
     # Get the current API key and cycle to the next one for future requests
     api_key = cycle_api_key()
 
@@ -52,17 +53,25 @@ def generate_content_with_cycling_keys(prompt, system_prompt, image=None):
         system_instruction=system_prompt,
     )
 
+    # utilize memory
+    # if system_prompt == system_prompt_generate:
+    #     local_memory = []
+    # else:
+    #     local_memory = messages
+    local_memory = []
+
     # Generate content using the provided prompt
     if image is None:
-        response = model.generate_content(prompt, request_options={"timeout": 1000})
+        response = model.generate_content(local_memory + [prompt], request_options={"timeout": 1000})
     else:
         response = model.generate_content(
-            [prompt, image], request_options={"timeout": 1000}
+            local_memory + [prompt, image], request_options={"timeout": 1000}
         )
     return response.text
 
 
 def interpret(prompt, url, html_string, img):
+    global messages
     user_prompt = f"""
     Current Page: 
     {html_string}
