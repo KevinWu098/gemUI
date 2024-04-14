@@ -4,6 +4,7 @@ import os
 import json
 from selenium_functions import extract_elements_by_xpath
 import PIL.Image
+import re
 
 # Load environment variables
 from dotenv import load_dotenv
@@ -170,4 +171,21 @@ def generate(html, selectors):
 )
     # remove the ``` and html from the generated_ui response
     generated_ui = generated_ui.replace("```html", "").replace("```", "")
-    return generated_ui
+    # fix the special id that has only '' or "" in the special-id
+    fixed_generated_ui = fix_special_id(generated_ui)
+    return fixed_generated_ui
+
+def fix_special_id(html_string):
+    def replace_quotes(match):
+        special_id_content = match.group(1)
+        # Replace single quotes inside the XPath expression with HTML entities
+        fixed_content = special_id_content.replace("'", "&apos;")
+        # Rebuild the special-id attribute using double quotes
+        return f'special-id="{fixed_content}"'
+    
+    # This regex looks for the special-id attribute and captures its content
+    pattern = r'special-id=[\'"]([^\'"]+)[\'"]'
+    # Use the sub function to replace the matched special-id attributes
+    fixed_html = re.sub(pattern, replace_quotes, html_string)
+    
+    return fixed_html
