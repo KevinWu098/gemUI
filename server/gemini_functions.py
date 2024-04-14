@@ -14,6 +14,10 @@ load_dotenv()
 GEMINI_API_KEYS = os.environ.get("GEMINI_API_KEYS")
 KEY_LIST = ast.literal_eval(GEMINI_API_KEYS)
 
+# Randomly shuffle the list of API keys
+import random
+random.shuffle(KEY_LIST)
+
 # Global index to keep track of the current key
 current_api_key_index = 0
 
@@ -22,32 +26,26 @@ messages = []
 
 # all the system prompts
 system_prompt_interpret = """
-You are a web browser navigation assistant that trims and scrapes relevant portions of the UI for a user.
+You are a web browser navigation assistant that trims and scrapes relevant portions of the UI for a user. Relevant is defined as the portion of the UI that the user requests for.
+Only return selectors or images that are relevant to the user's request.
 
-Whenever a user requests something, you will return an xpath selector, id selector, or src attribute of an image that is relevant to the user.
+Whenever a user requests something, you will return the xpath selector or the src attribute of an image that returns the path to the specific file the image is stored in within the client file of the website.
+Ensure that all paths end with the file extension of the image (examples are .jpg, .png, .gif, etc.)
 
-You will only return path or id selectors. If the request requires multiple choices, return ALL RELEVANT selectors that contains the UI that will enable the user to choose the choice themselves.
-
+If the request requires multiple choices, return ALL RELEVANT selectors that contains the UI that will enable the user to choose the choice themselves.
 For example, if there is a container containing two buttons, and it is ambiguous which button the user is interested in, return a selector to the container instead of one of the buttons only.
 
-If there are images that are relevant to the user, return the src attribute of the image.
-
-Output your result in the following format:
-
-If the user is interested in a specific part of the UI, output your result in the following format:
+Output your result in the following format and output as many selectors as necessary. Ensure that the output is a JSON object and that there is a diversity of file paths aligned to the specific types of each image:
 [
     {
         "type": xpath
-        "selector": the selection string
-    },
-    {
-        "type": id
-        "selector": the selection string
+        "selector": selector
     },
     {
         "type": src
-        "selector": the src attribute of the image
-    }
+        "selector": the src attribute of the image represented as the route to the image inside of the client file of the website
+    },
+    ...
 ]
 """
 
@@ -56,7 +54,7 @@ You are a web browser navigation assistant that generates a user interface for a
 You will be given DOM elements from another web browser navigation assistant that trims and scrapes relevant portions of the UI for a user.
 
 Your task is to generate valid HTML strings that can be rendered in a browser, specifically focusing on interactive elements such as buttons and text fields. 
-Please use TailwindCSS for styling.
+Please use TailwindCSS for styling. Use actual hex colors for the colors, do not use TailwindCSS classes for colors.
 
 Each element should only have two attributes:
 - class: a string of classes separated by spaces, for TailwindCSS styling
@@ -168,11 +166,8 @@ def generate(html, selectors):
             dom_elements += f"src: {element['selector']}\n"
     design = PIL.Image.open("design.png")
     generated_ui = generate_content_with_cycling_keys(
-        "Use the attached branding guide to style the output. Use the typographies and hex codes defined in the image\n"
-        + dom_elements,
-        system_prompt_generate,
-        image=design,
-    )
+    "Use the attached branding guide to style the output. Use the typographies and hex codes defined in the image. Do not use Tailwind Classes\nBase Url for images (if any): https://dominos.com" + dom_elements, system_prompt_generate, image=design
+)
     # remove the ``` and html from the generated_ui response
     generated_ui = generated_ui.replace("```html", "").replace("```", "")
     return generated_ui
