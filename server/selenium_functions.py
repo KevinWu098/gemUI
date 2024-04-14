@@ -35,3 +35,23 @@ def scrapeByXPath(browser, xpath):
     # iterate through each xpath, and get outer html if found
     xpaths = [browser.find_element(By.XPATH, i).get_attribute('outerHTML') for i in xpath]
     return xpaths
+
+def trimHTML(browser):
+    nonContentTags = [
+            "SCRIPT",
+            "STYLE",
+            "NOSCRIPT",
+            "BR",
+            "HR",
+            "HEAD",
+            "LINK",
+            "META",
+            "TITLE",
+        ]
+    for tag in nonContentTags:
+        browser.execute_script("""
+        var elements = document.getElementsByTagName('""" + tag + """);
+        while (elements.length > 0) {
+            elements[0].parentNode.removeChild(elements[0]);
+        }
+    """)
