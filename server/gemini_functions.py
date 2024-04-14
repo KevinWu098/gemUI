@@ -4,7 +4,12 @@ import os
 import json
 from selenium_functions import extract_elements_by_xpath
 import re
-from constants import design_schema, system_prompt_generate, system_prompt_interpret
+from constants import (
+    design_schema,
+    system_prompt_generate,
+    system_prompt_interpret,
+    navigate_prompt,
+)
 
 # Load environment variables
 from dotenv import load_dotenv
@@ -119,6 +124,57 @@ user: {prompt}
     return obj
 
 
+def navigate_check(prompt, url):
+    global current_api_key_index
+    global messages
+    # Get the current API key and cycle to the next one for future requests
+    api_key = cycle_api_key()
+
+    user_prompt = f"""
+{navigate_prompt}
+
+Current Page:
+{url}
+
+User Prompt:
+{prompt}
+"""
+    # Configure the generative AI model with the new API key
+    genai.configure(api_key=api_key)
+    model = genai.GenerativeModel(
+        "gemini-1.0-pro",
+        generation_config=genai.GenerationConfig(
+            max_output_tokens=4000,
+            temperature=0,
+        ),
+    )
+
+    # utilize memory
+    # if system_prompt == system_prompt_generate:
+    #     local_memory = []
+    # else:
+    #     local_memory = messages
+    local_memory = []
+
+    # Generate content using the provided prompt
+    response = model.generate_content(
+        local_memory + [user_prompt], request_options={"timeout": 1000}
+    )
+    response = response.text
+
+    if "```json" in response:
+        response = response.split("```json")[1].split("```")[0]
+
+    # example:
+    # [{'type': 'xpath',
+    #   'selector': '//a[@data-quid="start-your-order-delivery-cta"]'},
+    #   {'type': 'xpath',
+    #   'selector': '//a[@data-quid="start-your-order-carryout-cta"]'}]
+    obj = json.loads(response)
+
+    return obj
+
+
 def generate(html, selectors, url):
 
     # now generate the new UI
@@ -139,13 +195,13 @@ def generate(html, selectors, url):
         + "\n\n"
         + f"Only output div, button, input, and select elements.",
     )
-    # # remove the ``` and html from the generated_ui response
-    # generated_ui = generated_ui.replace("```html", "").replace("```", "")
-    # # fix the special id that has only '' or "" in the special-id
-    # fixed_generated_ui = fix_special_id(generated_ui)
-    # # clear all href attributes from the string
-    # fixed_generated_ui = clear_href_attributes(fixed_generated_ui)
-    return generated_ui
+    # remove the ``` and html from the generated_ui response
+    generated_ui = generated_ui.replace("```html", "").replace("```", "")
+    # fix the special id that has only '' or "" in the special-id
+    fixed_generated_ui = fix_special_id(generated_ui)
+    # clear all href attributes from the string
+    fixed_generated_ui = clear_href_attributes(fixed_generated_ui)
+    return fixed_generated_ui
 
 
 def fix_special_id(html_string):

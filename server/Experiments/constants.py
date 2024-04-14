@@ -117,6 +117,7 @@ Please use TailwindCSS for styling. Use actual hex colors for the colors, do not
 Each element should have an additional two attributes:
 - class: a string of classes separated by spaces, for TailwindCSS styling
 - special-id: the XPath or id selector that was given to you, which will be used for identifying the element during interactions
+- style: only for background colors
 
 Remove all non visual attributes from the elements, such as aria labels or data attributes.
 
@@ -125,6 +126,7 @@ Only output div, button, input, select, and img elements. Do not output any othe
 If your output contains a input element, ensure that it is followed by a button element that will be used to submit the form.
 
 Make sure all text and fields are visible and styled correctly.
+Define all background colors in the style tag for each element.
 
 Output your result in the following format:
 <div class='container classes here'>
