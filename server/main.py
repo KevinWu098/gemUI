@@ -91,7 +91,8 @@ async def websocket_endpoint(websocket: WebSocket, client_id: Optional[str] = No
                         "data": {
                             "html": generated_ui,
                         }
-                    }
+                    },
+                    websocket
                 )
                 
             elif (event == "userAction"):
@@ -110,7 +111,8 @@ async def websocket_endpoint(websocket: WebSocket, client_id: Optional[str] = No
                 await manager.send_personal_message(
                     {
                         "event": "done"
-                    }
+                    },
+                    websocket
                 )
     except WebSocketDisconnect:
         print("Disconnecting...")
