@@ -10,9 +10,11 @@ import { ChatShareDialog } from '@/components/chat-share-dialog'
 import { useAIState, useActions, useUIState } from 'ai/rsc'
 import type { AI } from '@/lib/chat/actions'
 import { nanoid } from 'nanoid'
-import { BotMessageNew, UserMessage } from './stocks/message'
+import { BotThought, BotUI, UserMessage } from './stocks/message'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
+
+import parse from 'html-react-parser'
 
 export interface ChatPanelProps {
   id?: string
@@ -21,6 +23,16 @@ export interface ChatPanelProps {
   setInput: (value: string) => void
   isAtBottom: boolean
   scrollToBottom: () => void
+}
+
+export interface ServerMessage {
+  event: 'thought' | 'ui'
+  data:
+    | {
+        thought: string
+      }
+    | { html: string }
+    | Object
 }
 
 const exampleMessages = [
@@ -78,6 +90,8 @@ export function ChatPanel({
   }, [])
 
   const submitUserMessage = (message: string) => {
+    // getDummyResponse()
+
     if (!socket) {
       console.log('Socket not connected')
       return
@@ -87,20 +101,75 @@ export function ChatPanel({
     console.log('Message Sent')
   }
 
-  if (socket) {
-    socket.onopen = function () {
-      socket.send(JSON.stringify({ event: 'start' }))
+  const containerRef = React.useRef<HTMLDivElement>(null)
+
+  React.useEffect(() => {
+    const handleClick = (event: any) => {
+      const id = event.target.getAttribute('id')
+      console.log(id)
     }
 
-    /**
-   * 
-   *  {
-        event: 'thought',
-        data: {
-          thought: 'I just navigated to https://www.dominos.com/en/pages/order/'
-      }
+    if (!containerRef.current) {
+      return
     }
-   */
+
+    const clickables = containerRef.current.querySelectorAll('div[id]')
+    // console.log(containerRef.current, clickables)
+
+    clickables.forEach((clickable: Element) => {
+      clickable.addEventListener('click', handleClick)
+    })
+
+    return () => {
+      clickables.forEach((clickable: Element) => {
+        clickable.removeEventListener('click', handleClick)
+      })
+    }
+  }, [messages])
+
+  // const getDummyResponse = () => {
+  //   console.log('git')
+  //   const message = {
+  //     event: 'ui',
+  //     data: {
+  //       html: `
+  //       <div>
+  //       <div class='hover:bg-gray-100 px-2 py-1 rounded-md text-sm font-medium' id='//a[@data-quid="start-your-order-delivery-cta"]'>
+  //           Delivery
+  //       </div>
+  //       <div class='hover:bg-gray-100 px-2 py-1 rounded-md text-sm font-medium' id='//a[@data-quid="start-your-order-carryout-cta"]'>
+  //           Carryout
+  //       </div>
+  //   </div>
+  //       `
+  //     }
+  //   }
+
+  //   setMessages(currentMessages => [
+  //     ...currentMessages,
+  //     {
+  //       id: nanoid(),
+  //       display:
+  //         message.event === 'thought' ? (
+  //           <BotThought>{message.data.thought}</BotThought>
+  //         ) : message.event === 'ui' ? (
+  //           <BotUI>
+  //             <div
+  //               ref={containerRef}
+  //               dangerouslySetInnerHTML={{ __html: message.data.html }}
+  //             />
+  //             {/* {message.data.html} */}
+  //           </BotUI>
+  //         ) : null
+  //     }
+  //   ])
+  // }
+
+  if (socket) {
+    // socket.onopen = function () {
+    //   socket.send(JSON.stringify({ event: 'start' }))
+    // }
+
     socket.onmessage = function (event) {
       console.log('Received message:', event.data)
 
@@ -112,7 +181,14 @@ export function ChatPanel({
             id: nanoid(),
             display:
               message.event === 'thought' ? (
-                <BotMessageNew>{message.data.thought}</BotMessageNew>
+                <BotThought>{message.data.thought}</BotThought>
+              ) : message.event === 'ui' ? (
+                <BotUI>
+                  <div
+                    ref={containerRef}
+                    dangerouslySetInnerHTML={{ __html: message.data.html }}
+                  />
+                </BotUI>
               ) : null
           }
         ])
@@ -153,15 +229,7 @@ export function ChatPanel({
                   ])
 
                   try {
-                    // const responseMessage = await submitUserMessage(
-                    //   example.message
-                    // )
                     submitUserMessage(example.message)
-
-                    // setMessages(currentMessages => [
-                    //   ...currentMessages,
-                    //   responseMessage
-                    // ])
                   } catch {
                     toast(
                       <div className="text-red-600">
