@@ -83,6 +83,7 @@ def selenium_type(browser, selector, text):
 def trimHTML(html_string):
     html_string = remove_non_content_tags(html_string)
     html_string = clear_style_attributes(html_string)
+    html_string = clean_html(html_string)
     
     return html_string
 
@@ -129,3 +130,12 @@ def clear_style_attributes(html_content):
     style_pattern = re.compile(r'\s*style\s*=\s*(".*?"|\'.*?\'|[^\'">\s]+)', re.IGNORECASE)
     # Remove style attributes
     return style_pattern.sub('', html_content)
+
+# clean the HTML spaces and newlines
+def clean_html(html_content):
+    html_content = re.sub(r'<!DOCTYPE html>', '', html_content, flags=re.IGNORECASE)
+    # Remove newlines, carriage returns, and tabs
+    html_content = re.sub(r'[\n\r\t]+', '', html_content)
+    # Replace sequences of more than two spaces with two spaces
+    html_content = re.sub(r'[ ]{2,}', '  ', html_content)
+    return html_content
