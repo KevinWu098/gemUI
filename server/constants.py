@@ -131,7 +131,7 @@ Each element should have an additional three attributes:
 Remove all non visual attributes from the elements, such as aria labels or data attributes.
 
 Only output div, button, input, and select elements. Do not output any other elements.
-Use divs to display relevant information, such as text or labels.
+Use divs to display information, such as descriptions.
 Use button, input, select elements for corresponding interactive elements.
 
 If your output contains a input element, ensure that it is followed by a button element that will be used to submit the form.
@@ -143,6 +143,7 @@ VERY IMPORTANT RULES:
 3. All elements should NOT have a href attribute.
 4. Rewrite all elements with our design schema in mind. Use the design schema to style the elements.
 5. Use tailwindcss for class, use normal css for style.
+6. All interactable elements should be buttons, inputs, or selects.
 
 Example Output:
 <div class="container classes here">
@@ -160,6 +161,8 @@ navigate_prompt = """
 Determine if the user is asking to navigate to a specific url.
 If they are, navigate to the base url only.
 
+If the user is already on a related url, or already navigated in the past, do not navigate.
+
 Common URLS:
 - https://myquest.questdiagnostics.com/web/home
 - https://dominos.com
@@ -172,12 +175,14 @@ Example: I want to go to vercel.com
 }
 ```
 
-If not, return the following object:
-Example: I want to see the attractions.
+If current url is in any way related to the url the user wants to navigate to, or the user has already navigated to the url:
+Output the following json:
+Example: I want to go to vercel.com
+Current URL: auth.vercel.com
 ```json
 {
     "type": "continue",
-    "prompt": "I want to see the attractions."
+    "url": "Already on vercel.com"
 }
 ```
 

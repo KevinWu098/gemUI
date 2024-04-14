@@ -133,7 +133,7 @@ def navigate_check(prompt, url):
     user_prompt = f"""
 {navigate_prompt}
 
-Current Page:
+Current Url:
 {url}
 
 User Prompt:
@@ -142,7 +142,7 @@ User Prompt:
     # Configure the generative AI model with the new API key
     genai.configure(api_key=api_key)
     model = genai.GenerativeModel(
-        "gemini-1.0-pro",
+        "gemini-1.5-pro-latest",
         generation_config=genai.GenerationConfig(
             max_output_tokens=4000,
             temperature=0,
@@ -171,6 +171,16 @@ User Prompt:
     #   {'type': 'xpath',
     #   'selector': '//a[@data-quid="start-your-order-carryout-cta"]'}]
     obj = json.loads(response)
+
+    messages.append(
+        {
+            "role": "user",
+            "parts": [user_prompt],
+        }
+    )
+
+    # remember the response
+    messages.append({"role": "model", "parts": [response]})
 
     return obj
 
