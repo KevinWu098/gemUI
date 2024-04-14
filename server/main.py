@@ -17,7 +17,7 @@ from selenium_functions import (
     selenium_type,
     take_screenshot,
 )
-from gemini_functions import generate, interpret
+from gemini_functions import generate, interpret, navigate_check
 import PIL.Image
 
 from starlette.middleware.cors import CORSMiddleware
@@ -124,8 +124,31 @@ async def navigate_ui(browser, websocket):
         url = getUrl(browser)
         print("Got URL: ", url)
 
-        # give the HTML and the url to gemini
+        nav = navigate_check(active_prompt, url)
+        print(nav)
+
+        if nav["type"] == "navigate":
+            await manager.send_personal_message(
+                {
+                    "event": "thought",
+                    "data": {
+                        "thought": "I'm navigating to" + nav["url"],
+                    },
+                },
+                websocket,
+            )
+            navigate(browser, nav["url"])
+            print("Navigating to ", nav["url"])
+            sleep(1.5)
+
+        url = getUrl(browser)
+        print("Got URL: ", url)
+        html = scrape(browser)
+        take_screenshot(browser)
+        img = PIL.Image.open("website.png")
+
         print("Gemini is interpreting...")
+        # give the HTML and the url to gemini
         await manager.send_personal_message(
             {
                 "event": "thought",
@@ -137,47 +160,16 @@ async def navigate_ui(browser, websocket):
         )
         selectors = interpret(active_prompt, url, html, img)
 
-        if selectors["type"] == "navigate":
-            await manager.send_personal_message(
-                {
-                    "event": "thought",
-                    "data": {
-                        "thought": "I'm navigating to " + selectors["url"],
-                    },
-                },
-                websocket,
-            )
-            navigate(browser, selectors["url"])
-            print("Navigating to ", selectors["url"])
-            sleep(1.5)
-            url = getUrl(browser)
-            print("Got URL: ", url)
-            html = scrape(browser)
-            take_screenshot(browser)
-            img = PIL.Image.open("website.png")
-
-            print("Gemini is interpreting...")
-            await manager.send_personal_message(
-                {
-                    "event": "thought",
-                    "data": {
-                        "thought": "I'm interpreting the page...",
-                    },
-                },
-                websocket,
-            )
-            selectors = interpret(active_prompt, url, html, img)
-
         print("Gemini is generating...")
         await manager.send_personal_message(
-                {
-                    "event": "thought",
-                    "data": {
-                        "thought": "I'm generating the UI...",
-                    },
+            {
+                "event": "thought",
+                "data": {
+                    "thought": "I'm generating the UI...",
                 },
-                websocket,
-            )
+            },
+            websocket,
+        )
         generated_ui = generate(html, selectors["selectors"], url)
         print(generated_ui)
         print("Gemini is done...")
