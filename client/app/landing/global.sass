@@ -126,17 +126,24 @@ button
   &.primary  
     background-color: $prim 
     color: white
-    
     &:hover  
       background-color: $hover-prim 
-     
-   
   &.secondary  
     background-color: $sec 
     color: $text-color
     border: $border
     &:hover  
       background-color: $hover-sec 
+  &.hero
+    background: linear-gradient(93deg, #C700E7 0.74%, #6303FF 99.48%)
+    color: #fff
+    height: fit-content
+    width: fit-content
+    font-size: 32px
+    &:hover
+        background-image: linear-gradient(120deg, lighten(#C700E7, 10%) 0%, lighten(#6303FF, 10%) 100%)
+        transform: scale(1.05)
+    
      
    
  
@@ -186,3 +193,40 @@ nav
     @include grid
     width: 100vw
     height: 100vh
+    background-image: url('../../public/background.svg')
+    background-size: cover  
+    background-position: center
+    justify-items: center
+.input-contain
+    @include flex-row
+    align-content: left
+    align-items: left
+    justify-content: flex-start
+    background-color: #fff
+    padding: 12px
+    border-radius: 16px
+    margin: 0 10vw
+    gap: 12px
+    width: 50vw
+    border: $border
+    transition: border 500ms ease
+    margin-bottom: 42px
+    &:hover
+        border: 3px solid $prim
+        cursor: pointer
+        .spark-contain
+            background: linear-gradient(93deg, #C700E7 0.74%, #6303FF 99.48%)
+            -webkit-background-clip: text
+            background-clip: text
+            color: transparent // Makes the text color transparent to show the background
+            -webkit-text-fill-color: transparent
+.spark-contain
+    font-size: 22px
+    color: $text-color
+.text-contain
+    @include flex-column
+    margin-bottom: 42px
+.hero-text
+    font-size: 32px
+    font-weight: 400
+    color: $p-color
