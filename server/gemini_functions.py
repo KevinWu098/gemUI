@@ -53,10 +53,12 @@ def generate_content_with_cycling_keys(prompt, system_prompt, image=None):
         system_instruction=system_prompt,
     )
 
-    if system_prompt == system_prompt_generate:
-        local_memory = []
-    else:
-        local_memory = messages
+    # utilize memory
+    # if system_prompt == system_prompt_generate:
+    #     local_memory = []
+    # else:
+    #     local_memory = messages
+    local_memory = []
 
     # Generate content using the provided prompt
     if image is None:
