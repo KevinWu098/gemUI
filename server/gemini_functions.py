@@ -4,6 +4,7 @@ import os
 import json
 from selenium_functions import extract_elements_by_xpath
 import PIL.Image
+import re
 
 # Load environment variables
 from dotenv import load_dotenv
@@ -170,4 +171,40 @@ def generate(html, selectors):
 )
     # remove the ``` and html from the generated_ui response
     generated_ui = generated_ui.replace("```html", "").replace("```", "")
-    return generated_ui
+    # fix the special id that has only '' or "" in the special-id
+    fixed_generated_ui = fix_special_id(generated_ui)
+    return fixed_generated_ui
+
+def fix_special_id(html_string):
+    def replace_first_and_last(input_string, char_to_replace, replacement_char):
+        print(input_string)
+        first_index = input_string.find(char_to_replace)
+        last_index = input_string.rfind(char_to_replace)
+        print(first_index, last_index)
+
+        if first_index != -1 and last_index != -1:
+            if len(input_string) > 0:
+                input_string = replacement_char + input_string[1:-1] + replacement_char
+                print('replaced:', input_string)
+            return input_string
+        else:
+            return input_string
+
+    def validate(input_str):
+        if (input_str.count("\"") == 4):
+            print("Too many doubles")
+            return replace_first_and_last(input_str, "\"", "\'")
+        elif (input_str.count("\'") == 4):
+            return replace_first_and_last(input_str, "\'", "\"")
+        else:
+            return input_str
+
+    after_equals_all = html_string.split("special-id=")[1:] # returns something like "fdasafdsaf other_prop=whatever"
+    for id in after_equals_all:
+        space_after = None
+        space_after = id.split(" ")[0]
+        space_after = id.split(">")[0] # returns everything prior to the next right bracket (the end)
+        if (" " in space_after):
+            space_after = id.split(" ")[0]
+        html_string = html_string.replace(space_after, validate(space_after))
+    return html_string
