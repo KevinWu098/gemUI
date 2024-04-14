@@ -25,6 +25,18 @@ export interface ChatPanelProps {
   scrollToBottom: () => void
 }
 
+export interface UserMessage {
+  event: 'userAction'
+  id: string
+  element: 'button'
+  value: string | undefined
+}
+
+export interface UserPrompt {
+  event: 'prompt'
+  prompt: string
+}
+
 export interface ServerMessage {
   event: 'thought' | 'ui'
   data:
@@ -70,6 +82,19 @@ const SocketIndicator = ({ socket }: { socket: WebSocket | undefined }) => {
   )
 }
 
+const sendSocketMessage = (
+  socket: WebSocket,
+  message: UserMessage | UserPrompt,
+  loading: boolean
+) => {
+  if (loading) {
+    console.warn('Operation currently running on server')
+    return
+  }
+
+  socket.send(JSON.stringify(message))
+}
+
 export function ChatPanel({
   id,
   title,
@@ -84,6 +109,7 @@ export function ChatPanel({
   const [shareDialogOpen, setShareDialogOpen] = React.useState(false)
 
   const [socket, setSocket] = React.useState<WebSocket>()
+  const [loading, setLoading] = React.useState(false)
 
   React.useEffect(() => {
     setSocket(new WebSocket('ws://localhost:8000/ws?client_id=123'))
@@ -97,7 +123,8 @@ export function ChatPanel({
       return
     }
 
-    socket.send(JSON.stringify({ event: 'prompt', prompt: message }))
+    sendSocketMessage(socket, { event: 'prompt', prompt: message }, loading)
+
     console.log('Message Sent')
   }
 
@@ -107,6 +134,22 @@ export function ChatPanel({
     const handleClick = (event: any) => {
       const id = event.target.getAttribute('id')
       console.log(id)
+
+      if (!socket) {
+        console.warn('No socket to send handleClick')
+        return
+      }
+
+      sendSocketMessage(
+        socket,
+        {
+          event: 'userAction',
+          id: id,
+          element: 'button',
+          value: undefined
+        },
+        loading
+      )
     }
 
     if (!containerRef.current) {
@@ -125,7 +168,7 @@ export function ChatPanel({
         clickable.removeEventListener('click', handleClick)
       })
     }
-  }, [messages])
+  }, [loading, messages, socket])
 
   // const getDummyResponse = () => {
   //   console.log('git')
