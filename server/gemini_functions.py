@@ -68,13 +68,13 @@ def interpret(prompt, url, html_string, img):
     Current Page: 
     {html_string}
     
-    
     Current Url:
     {url}
     
     Current_screenshot is attached
     
     Output a plan, then either output selectors, or a navigate object.
+    If current page is the requested page, output selectors list.
     user: {prompt}
     """
 

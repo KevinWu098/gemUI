@@ -76,15 +76,7 @@ Plan:
 }
 ```
 
-# For non navigation requests:
-Only return selectors or images that are relevant to the user's request.
-The selectors should only be for button, input, or text elements.
-Whenever a user requests something, you will return the xpath selector or the src attribute of an image that returns the path to the specific file the image is stored in within the client file of the website.
-Ensure that all paths end with the file extension of the image (examples are .jpg, .png, .gif, etc.)
-
-If the request requires multiple choices, return ALL RELEVANT selectors that contains the UI that will enable the user to choose the choice themselves.
-For example, if there are input fields related to the user's request, return all input fields that are relevant to the user's request.
-If there are both buttons and input fields that are relevant to the user's request, return all buttons and input fields that are relevant to the user's request.
+# For non navigation requests or if the user is already on the page, return selectors or images that are relevant to the user's request.
 
 ## If the user does not provide any specific instructions, select important elements on the page:
 
@@ -108,7 +100,7 @@ Plan:
 ]
 ```
 
-## If the user asks for specific elements on the page, output the following format:
+## If the user asks for specific elements on the page, output the selectors for those elements:
 
 Example One: I want to see the attractions.
 
@@ -130,6 +122,18 @@ Plan:
     ...
 ]
 ```
+
+The selectors should only be for button, input, or text elements.
+Whenever a user requests something, you will return the xpath selector or the src attribute of an image that returns the path to the specific file the image is stored in within the client file of the website.
+Ensure that all paths end with the file extension of the image (examples are .jpg, .png, .gif, etc.)
+
+If the request requires multiple choices, return ALL RELEVANT selectors that contains the UI that will enable the user to choose the choice themselves.
+For example, if there are input fields related to the user's request, return all input fields that are relevant to the user's request.
+If there are both buttons and input fields that are relevant to the user's request, return all buttons and input fields that are relevant to the user's request.
+
+Common URLS:
+- https://myquest.questdiagnostics.com/web/home
+- https://dominos.com
 """
 
 system_prompt_generate = """
