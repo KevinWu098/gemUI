@@ -112,11 +112,11 @@ export function ChatPanel({
   const [loading, setLoading] = React.useState(false)
 
   React.useEffect(() => {
-    setSocket(new WebSocket('ws://localhost:8000/ws?client_id=123'))
+    // setSocket(new WebSocket('ws://localhost:8000/ws?client_id=123'))
   }, [])
 
   const submitUserMessage = (message: string) => {
-    // getDummyResponse()
+    getDummyResponse()
 
     if (!socket) {
       console.log('Socket not connected')
@@ -132,7 +132,7 @@ export function ChatPanel({
 
   React.useEffect(() => {
     const handleClick = (event: any) => {
-      const id = event.target.getAttribute('id')
+      const id = event.target.getAttribute('special-id')
       console.log(id)
 
       if (!socket) {
@@ -156,7 +156,7 @@ export function ChatPanel({
       return
     }
 
-    const clickables = containerRef.current.querySelectorAll('div[id]')
+    const clickables = containerRef.current.querySelectorAll('div[special-id]')
     // console.log(containerRef.current, clickables)
 
     clickables.forEach((clickable: Element) => {
@@ -170,43 +170,43 @@ export function ChatPanel({
     }
   }, [loading, messages, socket])
 
-  // const getDummyResponse = () => {
-  //   console.log('git')
-  //   const message = {
-  //     event: 'ui',
-  //     data: {
-  //       html: `
-  //       <div>
-  //       <div class='hover:bg-gray-100 px-2 py-1 rounded-md text-sm font-medium' id='//a[@data-quid="start-your-order-delivery-cta"]'>
-  //           Delivery
-  //       </div>
-  //       <div class='hover:bg-gray-100 px-2 py-1 rounded-md text-sm font-medium' id='//a[@data-quid="start-your-order-carryout-cta"]'>
-  //           Carryout
-  //       </div>
-  //   </div>
-  //       `
-  //     }
-  //   }
+  const getDummyResponse = () => {
+    console.log('git')
+    const message = {
+      event: 'ui',
+      data: {
+        html: `
+        <div>
+        <div type='button' class='font-medium text-base px-6 py-3 rounded-lg bg-[#9F03FE] text-white hover:bg-[#8200D1] active:bg-[#9F03FE]' special-id='//a[@data-quid="start-your-order-delivery-cta"]'>
+            Delivery
+        </div>
+        <div type='button' class='font-medium text-base px-6 py-3 rounded-lg bg-[#9F03FE] text-white hover:bg-[#8200D1] active:bg-[#9F03FE]' special-id='//a[@data-quid="start-your-order-carryout-cta"]'>
+            Carryout
+        </div>
+    </div>
+        `
+      }
+    }
 
-  //   setMessages(currentMessages => [
-  //     ...currentMessages,
-  //     {
-  //       id: nanoid(),
-  //       display:
-  //         message.event === 'thought' ? (
-  //           <BotThought>{message.data.thought}</BotThought>
-  //         ) : message.event === 'ui' ? (
-  //           <BotUI>
-  //             <div
-  //               ref={containerRef}
-  //               dangerouslySetInnerHTML={{ __html: message.data.html }}
-  //             />
-  //             {/* {message.data.html} */}
-  //           </BotUI>
-  //         ) : null
-  //     }
-  //   ])
-  // }
+    setMessages(currentMessages => [
+      ...currentMessages,
+      {
+        id: nanoid(),
+        display:
+          message.event === 'thought' ? (
+            <BotThought>{message.data.thought}</BotThought>
+          ) : message.event === 'ui' ? (
+            <BotUI>
+              <div
+                ref={containerRef}
+                dangerouslySetInnerHTML={{ __html: message.data.html }}
+              />
+              {/* {message.data.html} */}
+            </BotUI>
+          ) : null
+      }
+    ])
+  }
 
   if (socket) {
     // socket.onopen = function () {
@@ -218,6 +218,12 @@ export function ChatPanel({
 
       try {
         const message = JSON.parse(event.data)
+
+        if (message.done) {
+          setLoading(false)
+          return
+        }
+
         setMessages(currentMessages => [
           ...currentMessages,
           {
