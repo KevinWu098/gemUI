@@ -30,7 +30,7 @@ def scrape(browser):
     # trim it
     page_html = trimHTML(page_html)
     # save the html as a text file
-    with open("output.html", "w", encoding="utf-8") as f:
+    with open("output.html", "w", encoding= "utf-8") as f:
         f.write(page_html)
     return page_html
 
