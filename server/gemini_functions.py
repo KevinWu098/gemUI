@@ -18,6 +18,7 @@ KEY_LIST = ast.literal_eval(GEMINI_API_KEYS)
 
 # Randomly shuffle the list of API keys
 import random
+
 random.shuffle(KEY_LIST)
 
 # Global index to keep track of the current key
@@ -25,6 +26,7 @@ current_api_key_index = 0
 
 # remember the previous messages
 messages = []
+
 
 def cycle_api_key():
     global current_api_key_index
@@ -70,14 +72,16 @@ def interpret(prompt, url, html, img):
 
     user: {prompt}
     """
-    
+
     # Generate content using the prompt and the website HTML
-    response = generate_content_with_cycling_keys(user_prompt, system_prompt_interpret, img)
+    response = generate_content_with_cycling_keys(
+        user_prompt, system_prompt_interpret, img
+    )
 
     if "```json" in response:
         response = response.split("```json")[1].split("```")[0]
 
-    # example: 
+    # example:
     # [{'type': 'xpath',
     #   'selector': '//a[@data-quid="start-your-order-delivery-cta"]'},
     #   {'type': 'xpath',
@@ -88,43 +92,42 @@ def interpret(prompt, url, html, img):
     messages.append(
         {
             "role": "user",
-            "parts": [
-                user_prompt
-            ],
+            "parts": [user_prompt],
         }
     )
 
     # remember the response
     messages.append({"role": "model", "parts": [response]})
 
-
     # return the selector object
     return obj
 
-def generate(html, selectors):
+
+def generate(html, selectors, url):
 
     # now generate the new UI
 
     dom_elements = ""
     for element in selectors:
-        if element['type'] == 'xpath':
+        if element["type"] == "xpath":
             dom_elements += extract_elements_by_xpath(html, element["selector"])
             dom_elements += "\n"
         else:
             dom_elements += f"src: {element['selector']}\n"
     generated_ui = generate_content_with_cycling_keys(
-    design_schema
-    + "\n\n"
-    + dom_elements
-    + "\n\n"
-    + '"Only output div, button, input, img, and select elements. Do not use Tailwind Classes\nBase Url for images (if any): https://dominos.com \n\n',
-    system_prompt_generate,
-)
+        design_schema
+        + "\n\n"
+        + dom_elements
+        + "\n\n"
+        + f"Only output div, button, input, img, and select elements. Do not use Tailwind Classes\nBase Url for images (if any): {url} \n\n",
+        system_prompt_generate,
+    )
     # remove the ``` and html from the generated_ui response
     generated_ui = generated_ui.replace("```html", "").replace("```", "")
     # fix the special id that has only '' or "" in the special-id
     fixed_generated_ui = fix_special_id(generated_ui)
     return fixed_generated_ui
+
 
 def fix_special_id(html_string):
     def replace_first_and_last(input_string, char_to_replace, replacement_char):
@@ -136,26 +139,30 @@ def fix_special_id(html_string):
         if first_index != -1 and last_index != -1:
             if len(input_string) > 0:
                 input_string = replacement_char + input_string[1:-1] + replacement_char
-                print('replaced:', input_string)
+                print("replaced:", input_string)
             return input_string
         else:
             return input_string
 
     def validate(input_str):
-        if (input_str.count("\"") == 4):
+        if input_str.count('"') == 4:
             print("Too many doubles")
-            return replace_first_and_last(input_str, "\"", "\'")
-        elif (input_str.count("\'") == 4):
-            return replace_first_and_last(input_str, "\'", "\"")
+            return replace_first_and_last(input_str, '"', "'")
+        elif input_str.count("'") == 4:
+            return replace_first_and_last(input_str, "'", '"')
         else:
             return input_str
 
-    after_equals_all = html_string.split("special-id=")[1:] # returns something like "fdasafdsaf other_prop=whatever"
+    after_equals_all = html_string.split("special-id=")[
+        1:
+    ]  # returns something like "fdasafdsaf other_prop=whatever"
     for id in after_equals_all:
         space_after = None
         space_after = id.split(" ")[0]
-        space_after = id.split(">")[0] # returns everything prior to the next right bracket (the end)
-        if (" " in space_after):
+        space_after = id.split(">")[
+            0
+        ]  # returns everything prior to the next right bracket (the end)
+        if " " in space_after:
             space_after = id.split(" ")[0]
         html_string = html_string.replace(space_after, validate(space_after))
     return html_string

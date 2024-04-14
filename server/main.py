@@ -48,7 +48,9 @@ app.add_middleware(
 async def root():
     return {"message": "Hello World"}
 
+
 active_prompt = ""
+
 
 # websocket
 @app.websocket("/ws")
@@ -74,10 +76,10 @@ async def websocket_endpoint(websocket: WebSocket, client_id: Optional[str] = No
             elif event == "prompt":
                 active_prompt = data["prompt"]
                 await navigate_ui(browser, websocket)
-                
-            elif (event == "userAction"):
-                selector = data["id"]        # will be used to query
-                element = data["element"]    # the type of input/action
+
+            elif event == "userAction":
+                selector = data["id"]  # will be used to query
+                element = data["element"]  # the type of input/action
                 if "value" in data:
                     value = data["value"]
                 else:
@@ -93,13 +95,8 @@ async def websocket_endpoint(websocket: WebSocket, client_id: Optional[str] = No
                     print("Unknown element type")
                 # done processing action on remote browser
 
-                await manager.send_personal_message(
-                    {
-                        "event": "done"
-                    },
-                    websocket
-                )
-            elif (event == "debug"):
+                await manager.send_personal_message({"event": "done"}, websocket)
+            elif event == "debug":
                 elements = scrapeByXPath(browser, [data["xpath"]])
                 print(elements)
     except WebSocketDisconnect:
@@ -111,6 +108,7 @@ if __name__ == "__main__":
     # uvicorn main:app --reload
     # ws://localhost:8000/ws?client_id=123
     uvicorn.run(app, host="0.0.0.0", port=10000)
+
 
 async def navigate_ui(browser, websocket):
     global active_prompt
@@ -128,7 +126,7 @@ async def navigate_ui(browser, websocket):
     selectors = interpret(active_prompt, url, html, img)
 
     print("Gemini is generating...")
-    generated_ui = generate(html, selectors)
+    generated_ui = generate(html, selectors, url)
     print("Gemini is done...")
 
     await manager.send_personal_message(
@@ -136,7 +134,7 @@ async def navigate_ui(browser, websocket):
             "event": "ui",
             "data": {
                 "html": generated_ui,
-            }
+            },
         },
-        websocket
+        websocket,
     )
