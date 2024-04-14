@@ -48,11 +48,13 @@ app.add_middleware(
 async def root():
     return {"message": "Hello World"}
 
+active_prompt = ""
 
 # websocket
 @app.websocket("/ws")
 # default state of client is none
 async def websocket_endpoint(websocket: WebSocket, client_id: Optional[str] = None):
+    global active_prompt
     if client_id is None:
         client_id = websocket.query_params.get("client_id")
 
@@ -70,7 +72,8 @@ async def websocket_endpoint(websocket: WebSocket, client_id: Optional[str] = No
             if event == "start":
                 browser = open_browser(browser)
             elif event == "prompt":
-                await navigate_ui(browser, data, websocket)
+                active_prompt = data["prompt"]
+                await navigate_ui(browser, websocket)
                 
             elif (event == "userAction"):
                 selector = data["id"]        # will be used to query
@@ -109,7 +112,8 @@ if __name__ == "__main__":
     # ws://localhost:8000/ws?client_id=123
     uvicorn.run(app, host="0.0.0.0", port=10000)
 
-async def navigate_ui(browser, data, websocket):
+async def navigate_ui(browser, websocket):
+    global active_prompt
     # scrape the HTML
     html = scrape(browser)
     print("Scraped HTML")
@@ -118,11 +122,10 @@ async def navigate_ui(browser, data, websocket):
     # give the current URL to Gemini
     url = getUrl(browser)
     print("Got URL: ", url)
-    prompt = data["prompt"]
 
     # give the HTML and the url to gemini
     print("Gemini is interpreting...")
-    selectors = interpret(prompt, url, html, img)
+    selectors = interpret(active_prompt, url, html, img)
 
     print("Gemini is generating...")
     generated_ui = generate(html, selectors)

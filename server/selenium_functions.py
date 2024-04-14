@@ -21,6 +21,9 @@ def getUrl(browser):
     return browser.current_url
 
 def scrape(browser):
+    # trim it
+    trimHTML(browser)
+    # scrape it
     page_html = browser.page_source
      # save the html as a text file
     with open("output.html", "w", encoding="utf-8") as f:
