@@ -63,10 +63,10 @@ def generate_content_with_cycling_keys(prompt, system_prompt, image=None):
     return response.text
 
 
-def interpret(prompt, url, html, img):
+def interpret(prompt, url, html_string, img):
     user_prompt = f"""
     current_url: {url}
-    current_page: {html}
+    current_page: {html_string}
     current_screenshot is attached
     Output selectors for relevant elements (divs, inputs, and images) that are relevant to the user's request.x
 
