@@ -33,7 +33,16 @@ h1
     margin: 0 
     padding: 0 
     line-height: 1.2em
-
+h2
+    font-size: 68px
+    font-weight: 600
+    color: $p-color
+    margin: 0 
+    padding: 0 
+    line-height: 1.2em
+    span
+        color: $text-color
+        style: italic
  
 //* buttons
 button  
@@ -194,7 +203,7 @@ nav
 .hero
     @include grid
     width: 100vw
-    height: 100vh
+    height: 200vh
     background-image: url('../../public/background.svg')
     background-size: cover  
     background-position: center
@@ -204,10 +213,10 @@ nav
     width: 100vw
     height: 100vh
     height: fit-content
-    background-image: url('../../public/gemui_page_logo.svg')
-    background-position: center
-    justify-items: center
-    background-repeat: no-repeat
+    // background-image: url('../../public/gemui_page_logo.svg')
+    // background-position: center
+    // justify-items: center
+    // background-repeat: no-repeat
 .input-contain
     @include flex-row
     align-content: left
@@ -237,7 +246,13 @@ nav
 .text-contain
     @include flex-column
     margin-bottom: 42px
+    z-index: 900909009
 .hero-text
-    font-size: 32px
+    font-size: 28px
     font-weight: 400
     color: $p-color
+.features
+    width: 100vw
+    height: 100vh
+    
+    background-image: url('../../public/background.svg')

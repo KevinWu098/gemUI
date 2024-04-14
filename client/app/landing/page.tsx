@@ -25,7 +25,6 @@ function page() {
           }}
         >
           <section className="hero">
-   
             <div className="text-contain">
               <FadeIn delay={2}>
                 <h1>Making User Interfaces</h1>
@@ -91,7 +90,14 @@ function page() {
                 repeat={Infinity}
               />
             </div>
-            <button className="hero">✦ Sign up ✦</button>
+            <button
+              className="hero"
+              onClick={() => {
+                window.location.href = '/'
+              }}
+            >
+              ✦ Start Now ✦
+            </button>
           </section>
         </ParallaxLayer>
 
@@ -110,18 +116,54 @@ function page() {
           <div className="parallax">
             <ScrollAnimation animateIn="fadeIn">
               <div
-                className="sticky-img-contain"
                 style={{
-                  height: '100vh',
+                  height: 'fit-content',
                   display: 'flex',
                   flexDirection: 'column',
                   padding: '0 56px',
-                  zIndex: 999
+                  gap: '22px',
+                  zIndex: '999',
+                  marginTop: '-70vh'
                 }}
               >
-                <img src="./gemui_mockup.svg" alt="" />
+                <img src="./gemui_page_logo.svg" style={{ margin: '0 86px' }} />
+                <img src="./gemui_mockup.svg" className="sticky-img-contain" />
               </div>
             </ScrollAnimation>
+          </div>
+        </ParallaxLayer>
+
+        {/* features */}
+        <ParallaxLayer
+          offset={1}
+          speed={0.5}
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            position: 'relative',
+            height: '100vh'
+          }}
+        >
+          <div
+            className="features"
+            style={{ marginTop: '50vh', height: '100vh' }}
+          >
+            <h2
+              style={{
+                margin: '22px 98px',
+                width: '90vw',
+                textAlign: 'center'
+              }}
+            >
+              A <span>personalized</span> web experience
+              <br />
+              for <span>everyone</span>.
+            </h2>
+            <img
+              src="./features_gemui.svg"
+              style={{ margin: '0 98px', width: '90vw' }}
+            />
           </div>
         </ParallaxLayer>
       </Parallax>
