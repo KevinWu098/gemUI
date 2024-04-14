@@ -49,14 +49,14 @@ export interface ServerMessage {
 
 const exampleMessages = [
   {
-    heading: 'Order a Pepperoni Pizza online',
-    subheading: "from Domino's Pizza",
-    message: "Order me a Pepperoni Pizza online from Domino's Pizza"
+    heading: 'See Overdue Vaccinations',
+    subheading: "on UCI Health's dashboard",
+    message: `Login to UCI Health's dashboard`
   },
   {
-    heading: 'Check your medical coverage',
-    subheading: "on Kaiser Permanente's dashboard",
-    message: `Check my medical coverage on Kaiser Permanente's dashboard`
+    heading: 'Order a Pepperoni Pizza online',
+    subheading: "from Domino's Pizza",
+    message: 'I want to order a pizza'
   }
 ]
 
@@ -82,7 +82,7 @@ const SocketIndicator = ({ socket }: { socket: WebSocket | undefined }) => {
   )
 }
 
-const sendSocketMessage = (
+export const sendSocketMessage = (
   socket: WebSocket,
   message: UserMessage | UserPrompt,
   loading: boolean
@@ -93,6 +93,7 @@ const sendSocketMessage = (
   }
 
   socket.send(JSON.stringify(message))
+  console.log('Sent message to server')
 }
 
 export function ChatPanel({
@@ -111,12 +112,16 @@ export function ChatPanel({
   const [socket, setSocket] = React.useState<WebSocket>()
   const [loading, setLoading] = React.useState(false)
 
+  const DUMMY_MODE = false
+
   React.useEffect(() => {
-    // setSocket(new WebSocket('ws://localhost:8000/ws?client_id=123'))
-  }, [])
+    if (DUMMY_MODE) return
+
+    setSocket(new WebSocket('ws://localhost:8000/ws?client_id=123'))
+  }, [DUMMY_MODE])
 
   const submitUserMessage = (message: string) => {
-    getDummyResponse()
+    if (DUMMY_MODE) getDummyResponse()
 
     if (!socket) {
       console.log('Socket not connected')
@@ -133,7 +138,7 @@ export function ChatPanel({
   React.useEffect(() => {
     const handleClick = (event: any) => {
       const id = event.target.getAttribute('special-id')
-      console.log(id)
+      console.log('clicked', id)
 
       if (!socket) {
         console.warn('No socket to send handleClick')
@@ -156,10 +161,12 @@ export function ChatPanel({
       return
     }
 
-    const clickables = containerRef.current.querySelectorAll('div[special-id]')
+    const clickables =
+      containerRef.current.querySelectorAll('button[special-id]')
     // console.log(containerRef.current, clickables)
 
     clickables.forEach((clickable: Element) => {
+      console.log(clickable)
       clickable.addEventListener('click', handleClick)
     })
 
@@ -176,17 +183,10 @@ export function ChatPanel({
       event: 'ui',
       data: {
         html: `
-        <div>
-        <div type='button' class='font-medium text-base px-6 py-3 rounded-lg bg-[#9F03FE] text-white hover:bg-[#8200D1] active:bg-[#9F03FE]' special-id='//a[@data-quid="start-your-order-delivery-cta"]'>
-            Delivery
-        </div>
-        <div type='button' class='font-medium text-base px-6 py-3 rounded-lg bg-[#9F03FE] text-white hover:bg-[#8200D1] active:bg-[#9F03FE]' special-id='//a[@data-quid="start-your-order-carryout-cta"]'>
-            Carryout
-        </div>
-    </div>
+
         `
       }
-    }
+    } as any
 
     setMessages(currentMessages => [
       ...currentMessages,
@@ -336,7 +336,12 @@ export function ChatPanel({
         ) : null}
 
         <div className="grid gap-4 sm:pb-4">
-          <PromptForm input={input} setInput={setInput} />
+          <PromptForm
+            input={input}
+            setInput={setInput}
+            socket={socket}
+            loading={loading}
+          />
           <FooterText className="hidden sm:block" />
         </div>
       </div>
