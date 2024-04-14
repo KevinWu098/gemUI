@@ -6,12 +6,14 @@ import uvicorn
 from manager import manager
 from fastapi.websockets import WebSocket, WebSocketDisconnect
 from selenium_functions import (
+    click,
     getUrl,
     navigate,
     open_browser,
     scrape,
     scrapeById,
     scrapeByXPath,
+    selenium_type,
 )
 from gemini_functions import interpret
 
@@ -128,13 +130,24 @@ async def websocket_endpoint(websocket: WebSocket, client_id: Optional[str] = No
                         },
                         websocket,
                     )
-            # elif (event == "navigate"):
-            #     url = data["url"]
-            #     print("Navigating to: ", url)
-            #     browser = navigate(browser, url)
-            # elif (event == "scrape"):
-            #     print("Scraping...")
-            #     html = scrape(browser)
+            elif (event == "userAction"):
+                selector = event["id"]        # will be used to query
+                element = event["element"]    # the type of input/action
+                value = event["value"]
+
+                if element == "button":
+                    click(browser, selector)
+                elif element == "input":
+                    selenium_type(browser, selector, value)
+                else:
+                    print("Unknown element type")
+                # done processing action on remote browser
+
+                await manager.send_personal_message(
+                    {
+                        "event": "done"
+                    }
+                )
     except WebSocketDisconnect:
         print("Disconnecting...")
         await manager.disconnect(client_id)

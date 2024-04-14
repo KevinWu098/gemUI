@@ -36,6 +36,12 @@ def scrapeByXPath(browser, xpath):
     xpaths = [browser.find_element(By.XPATH, i).get_attribute('outerHTML') for i in xpath]
     return xpaths
 
+def click(browser, selector):
+    browser.find_element(By.ID, selector).click()
+
+def selenium_type(browser, selector, text):
+    browser.find_element(By.ID, selector).send_keys(text)
+
 def trimHTML(browser):
     nonContentTags = [
             "SCRIPT",
