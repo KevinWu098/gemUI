@@ -140,6 +140,7 @@ button
     height: fit-content
     width: fit-content
     font-size: 32px
+    transition: transform 500ms ease
     &:hover
         background-image: linear-gradient(120deg, lighten(#C700E7, 10%) 0%, lighten(#6303FF, 10%) 100%)
         transform: scale(1.05)
@@ -156,6 +157,7 @@ button
     padding: 22px
     width: 100vw
     position: fixed
+    z-index: 10000
     
 nav  
   width: fit-content
@@ -197,6 +199,15 @@ nav
     background-size: cover  
     background-position: center
     justify-items: center
+.parallax
+    @include grid
+    width: 100vw
+    height: 100vh
+    height: fit-content
+    background-image: url('../../public/gemui_page_logo.svg')
+    background-position: center
+    justify-items: center
+    background-repeat: no-repeat
 .input-contain
     @include flex-row
     align-content: left
