@@ -3,7 +3,6 @@ import ast
 import os
 import json
 from selenium_functions import extract_elements_by_xpath
-import PIL.Image
 import re
 from constants import design_schema, system_prompt_generate, system_prompt_interpret
 
@@ -133,6 +132,8 @@ def generate(html, selectors, url):
     generated_ui = generated_ui.replace("```html", "").replace("```", "")
     # fix the special id that has only '' or "" in the special-id
     fixed_generated_ui = fix_special_id(generated_ui)
+    # clear all href attributes from the string
+    fixed_generated_ui = clear_href_attributes(fixed_generated_ui)
     return fixed_generated_ui
 
 
@@ -173,3 +174,9 @@ def fix_special_id(html_string):
             space_after = id.split(" ")[0]
         html_string = html_string.replace(space_after, validate(space_after))
     return html_string
+
+def clear_href_attributes(html_content):
+    # Regular expression to match href attributes
+    href_pattern = re.compile(r'\s*href\s*=\s*(".*?"|\'.*?\'|[^\'">\s]+)', re.IGNORECASE)
+    # Remove href attributes
+    return href_pattern.sub('', html_content)
