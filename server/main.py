@@ -50,6 +50,7 @@ async def root():
 
 
 active_prompt = ""
+browser = None
 
 
 # websocket
@@ -57,6 +58,7 @@ active_prompt = ""
 # default state of client is none
 async def websocket_endpoint(websocket: WebSocket, client_id: Optional[str] = None):
     global active_prompt
+    global browser
     if client_id is None:
         client_id = websocket.query_params.get("client_id")
 
@@ -65,7 +67,7 @@ async def websocket_endpoint(websocket: WebSocket, client_id: Optional[str] = No
         return
     # save this client into server memory
     await manager.connect(websocket, client_id)
-    browser = open_browser()
+    browser = open_browser(browser)
     try:
         while True:
             data = await websocket.receive_json()
@@ -124,9 +126,27 @@ async def navigate_ui(browser, websocket):
 
         # give the HTML and the url to gemini
         print("Gemini is interpreting...")
+        await manager.send_personal_message(
+            {
+                "event": "thought",
+                "data": {
+                    "thought": "I'm interpreting the page...",
+                },
+            },
+            websocket,
+        )
         selectors = interpret(active_prompt, url, html, img)
 
         if selectors["type"] == "navigate":
+            await manager.send_personal_message(
+                {
+                    "event": "thought",
+                    "data": {
+                        "thought": "I'm navigating to" + selectors["url"],
+                    },
+                },
+                websocket,
+            )
             navigate(browser, selectors["url"])
             print("Navigating to ", selectors["url"])
             sleep(1.5)
@@ -137,13 +157,30 @@ async def navigate_ui(browser, websocket):
             img = PIL.Image.open("website.png")
 
             print("Gemini is interpreting...")
+            await manager.send_personal_message(
+                {
+                    "event": "thought",
+                    "data": {
+                        "thought": "I'm interpreting the page...",
+                    },
+                },
+                websocket,
+            )
             selectors = interpret(active_prompt, url, html, img)
 
         print("Gemini is generating...")
+        await manager.send_personal_message(
+                {
+                    "event": "thought",
+                    "data": {
+                        "thought": "I'm generating the UI...",
+                    },
+                },
+                websocket,
+            )
         generated_ui = generate(html, selectors["selectors"], url)
         print(generated_ui)
         print("Gemini is done...")
-
         await manager.send_personal_message(
             {
                 "event": "ui",
