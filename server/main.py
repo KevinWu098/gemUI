@@ -100,7 +100,10 @@ async def websocket_endpoint(websocket: WebSocket, client_id: Optional[str] = No
             elif (event == "userAction"):
                 selector = data["id"]        # will be used to query
                 element = data["element"]    # the type of input/action
-                value = data["value"]
+                if value in data:
+                    value = data["value"]
+                else:
+                    value = None
 
                 if element == "button":
                     click(browser, selector)
