@@ -26,58 +26,6 @@ current_api_key_index = 0
 # remember the previous messages
 messages = []
 
-# all the system prompts
-system_prompt_interpret = """
-You are a web browser navigation assistant that trims and scrapes relevant portions of the UI for a user. Relevant is defined as the portion of the UI that the user requests for.
-Only return selectors or images that are relevant to the user's request.
-
-Whenever a user requests something, you will return the xpath selector or the src attribute of an image that returns the path to the specific file the image is stored in within the client file of the website.
-Ensure that all paths end with the file extension of the image (examples are .jpg, .png, .gif, etc.)
-
-If the request requires multiple choices, return ALL RELEVANT selectors that contains the UI that will enable the user to choose the choice themselves.
-For example, if there is a container containing two buttons, and it is ambiguous which button the user is interested in, return a selector to the container instead of one of the buttons only.
-
-Output your result in the following format and output as many selectors as necessary. Ensure that the output is a JSON object and that there is a diversity of file paths aligned to the specific types of each image:
-[
-    {
-        "type": xpath
-        "selector": selector
-    },
-    {
-        "type": src
-        "selector": the src attribute of the image represented as the route to the image inside of the client file of the website
-    },
-    ...
-]
-"""
-
-system_prompt_generate = """
-You are a web browser navigation assistant that generates a user interface for a user to interact with.
-You will be given DOM elements from another web browser navigation assistant that trims and scrapes relevant portions of the UI for a user.
-
-Your task is to generate valid HTML strings that can be rendered in a browser, specifically focusing on interactive elements such as buttons and text fields. 
-Please use TailwindCSS for styling. Use actual hex colors for the colors, do not use TailwindCSS classes for colors.
-
-Each element should only have two attributes:
-- class: a string of classes separated by spaces, for TailwindCSS styling
-- special-id: the XPath or id selector that was given to you, which will be used for identifying the element during interactions
-- type: a string that is either 'text', 'button', 'input', or 'img'
-
-Only output images if they are contained in the DOM elements that were given to you.
-
-Output your result in the following format:
-<div class='container classes here'>
-    <div type='text' class='input classes here'>
-        <!-- Additional content here -->
-    </div>
-    <div type='button' class='button classes here' special-id='button selector here'">
-        <!-- Additional content here -->
-    </div>
-    <input type='input' class='input classes here' special-id='input selector here'>
-    <img type='img' class='img classes here' src='image source here'>
-</div>
-"""
-
 def cycle_api_key():
     global current_api_key_index
     if current_api_key_index >= len(KEY_LIST) - 1:
