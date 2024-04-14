@@ -80,10 +80,12 @@ async def websocket_endpoint(websocket: WebSocket, client_id: Optional[str] = No
                 prompt = data["prompt"]
 
                 # give the HTML and the url to gemini
-                print("Gemini is thinking...")
+                print("Gemini is interpreting...")
                 selectors = interpret(prompt, url, html, img)
 
+                print("Gemini is generating...")
                 generated_ui = generate(html, selectors)
+                print("Gemini is done...")
 
                 await manager.send_personal_message(
                     {
