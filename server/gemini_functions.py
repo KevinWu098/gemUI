@@ -36,7 +36,7 @@ def cycle_api_key():
     return KEY_LIST[current_api_key_index]
 
 
-def generate_content_with_cycling_keys(prompt, system_prompt, image=None):
+def generate_content_with_cycling_keys(prompt, image=None):
     global current_api_key_index
     global messages
     # Get the current API key and cycle to the next one for future requests
@@ -50,7 +50,6 @@ def generate_content_with_cycling_keys(prompt, system_prompt, image=None):
             max_output_tokens=8000,
             temperature=0,
         ),
-        system_instruction=system_prompt,
     )
 
     # utilize memory
@@ -62,7 +61,9 @@ def generate_content_with_cycling_keys(prompt, system_prompt, image=None):
 
     # Generate content using the provided prompt
     if image is None:
-        response = model.generate_content(local_memory + [prompt], request_options={"timeout": 1000})
+        response = model.generate_content(
+            local_memory + [prompt], request_options={"timeout": 1000}
+        )
     else:
         response = model.generate_content(
             local_memory + [prompt, image], request_options={"timeout": 1000}
@@ -73,22 +74,22 @@ def generate_content_with_cycling_keys(prompt, system_prompt, image=None):
 def interpret(prompt, url, html_string, img):
     global messages
     user_prompt = f"""
-    Current Page: 
-    {html_string}
-    
-    Current Url:
-    {url}
-    
-    Current_screenshot is attached
-    
-    Output a plan, then either output selectors, or a navigate object.
-    If current page is the requested page, output selectors list.
-    user: {prompt}
-    """
+Current Page: 
+{html_string}
+
+Current Url:
+{url}
+
+Current_screenshot is attached
+
+Output a plan, then either output selectors, or a navigate object.
+If current page is the requested page, output selectors list.
+user: {prompt}
+"""
 
     # Generate content using the prompt and the website HTML
     response = generate_content_with_cycling_keys(
-        user_prompt, system_prompt_interpret, img
+        system_prompt_interpret + "\n\n" + user_prompt, img
     )
 
     print(response)
@@ -130,20 +131,21 @@ def generate(html, selectors, url):
         else:
             dom_elements += f"src: {element['selector']}\n"
     generated_ui = generate_content_with_cycling_keys(
-        design_schema
+        dom_elements
         + "\n\n"
-        + dom_elements
+        + system_prompt_generate
         + "\n\n"
-        + f"Only output div, button, input, img, and select elements. Do not use Tailwind Classes\nBase Url for images (if any): {url} \n\n",
-        system_prompt_generate,
+        + design_schema
+        + "\n\n"
+        + f"Only output div, button, input, and select elements.",
     )
-    # remove the ``` and html from the generated_ui response
-    generated_ui = generated_ui.replace("```html", "").replace("```", "")
-    # fix the special id that has only '' or "" in the special-id
-    fixed_generated_ui = fix_special_id(generated_ui)
-    # clear all href attributes from the string
-    fixed_generated_ui = clear_href_attributes(fixed_generated_ui)
-    return fixed_generated_ui
+    # # remove the ``` and html from the generated_ui response
+    # generated_ui = generated_ui.replace("```html", "").replace("```", "")
+    # # fix the special id that has only '' or "" in the special-id
+    # fixed_generated_ui = fix_special_id(generated_ui)
+    # # clear all href attributes from the string
+    # fixed_generated_ui = clear_href_attributes(fixed_generated_ui)
+    return generated_ui
 
 
 def fix_special_id(html_string):
@@ -184,8 +186,11 @@ def fix_special_id(html_string):
         html_string = html_string.replace(space_after, validate(space_after))
     return html_string
 
+
 def clear_href_attributes(html_content):
     # Regular expression to match href attributes
-    href_pattern = re.compile(r'\s*href\s*=\s*(".*?"|\'.*?\'|[^\'">\s]+)', re.IGNORECASE)
+    href_pattern = re.compile(
+        r'\s*href\s*=\s*(".*?"|\'.*?\'|[^\'">\s]+)', re.IGNORECASE
+    )
     # Remove href attributes
-    return href_pattern.sub('', html_content)
+    return href_pattern.sub("", html_content)

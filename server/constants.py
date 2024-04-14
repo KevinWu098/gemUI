@@ -1,57 +1,46 @@
 design_schema = """
-Color Palette:
+Global Values:
 Text Color: #2B2B2B
 Input Text Color: #A5A5A5
 Paragraph Color: #646464
 Background: #DEDEDE
 Primary Color: #9F03FE
 Hover: #8200D1
+Text Family: Inter
 
-Typography:
-heading
+Heading Text
 color: #2B2B2B;
-font-family: Inter;
 font-weight: 700;
 
-subheadings
+Subheading Text:
 color: #646464;
-font-family: Poppins;
 font-weight: 600;
 
-paragraph
+Paragraph Text:
 color: #646464;
-font-family: Poppins;
 font-weight: 500;
 
-subparagraphs
+Subparagraph Text:
 color: #646464;
-font-family: Poppins;
 font-weight: 500;
 
-default text
+Default Text:
 color: #646464;
 
-Components:
+Primary Button:
+Border Radius: 0.5rem;
+Background Color: #9F03FE;
+Text Color: #FFF;
+Text Font Weight: 500;
 
-primary button
-border-radius: 0.5rem;
-background: #9F03FE;
+Secondary Button:
+Border Radius: 0.5rem;
+Border: 3px solid #DEDEDE;
+Background Color: $F5F4F7;
+Text Color: #2B2B2B;
+Text Font Weight: 500;
 
-primary button text
-color: #FFF;
-font-weight: 500;
-
-secondary button
-border-radius: 0.5rem;
-border: 3px solid #DEDEDE;
-
-secondary button text
-color: #2B2B2B;
-font-family: Inter;
-font-weight: 500;
-
-
-input:
+Input:
 border-radius: 0.5rem;
 border: 3px solid #DEDEDE;
 background: #FFF;
@@ -109,7 +98,7 @@ Example One: I want to see the attractions.
 
 Plan:
 - I need to select the attraction items on the page.
-- Each attraction will need the name, image, and description.
+- Each attraction will need the name, and description.
 - I need to select the button that will allow the user to navigate to the attraction page.
 
 ```json
@@ -118,11 +107,11 @@ Plan:
     selectors: [
         {
             "type": xpath
-            "selector": selector
+            "selector": name
         },
         {
-            "type": src
-            "selector": the src attribute of the image represented as the route to the image inside of the client file of the website
+            "type": xpath
+            "selector": description
         },
         ...
     ]
@@ -130,8 +119,7 @@ Plan:
 ```
 
 The selectors should only be for button, input, or text elements.
-Whenever a user requests something, you will return the xpath selector or the src attribute of an image that returns the path to the specific file the image is stored in within the client file of the website.
-Ensure that all paths end with the file extension of the image (examples are .jpg, .png, .gif, etc.)
+Whenever a user requests something, you will return the xpath selectors for the specific elements that the user requests for.
 
 If the request requires multiple choices, return ALL RELEVANT selectors that contains the UI that will enable the user to choose the choice themselves.
 For example, if there are input fields related to the user's request, return all input fields that are relevant to the user's request.
@@ -160,21 +148,24 @@ Each element should have an additional two attributes:
 
 Remove all non visual attributes from the elements, such as aria labels or data attributes.
 
-Only output images if they are contained in the DOM elements that were given to you.
-Only output div, button, input, select, and img elements. Do not output any other elements.
+Only output div, button, input, and select elements. Do not output any other elements.
 If your output contains a input element, ensure that it is followed by a button element that will be used to submit the form.
 
-Make sure all text and fields are visible and styled correctly.
+VERY IMPORTANT RULES:
+1. Your output MUST start with <div class='container classes here'> and end with </div>.
+2. All attributes must be in double quotes, but any quotes inside the attribute value must be single quotes. Eg. <div special-id="//a[@data-quid='value']">
+3. All elements should NOT have a href attribute.
+4. Rewrite all elements with our design schema in mind. Use the design schema to style the elements.
 
-Output your result in the following format:
-<div class='container classes here'>
-    <div class='input classes here'>
+Example Output:
+<div class="container classes here">
+    <div class="input classes here">
        ...
     </div>
-    <button class='button classes here' special-id='button selector here'">
+    <button class="button classes here" special-id="//button[@data-quid='value']">
         Submit
     </button>
-    <input class='input classes here' special-id='input selector here'>
-    <img class='img classes here' src='image source here'>
+    <input class="input classes here" special-id="//input[@data-quid='value']">
+    <img class="img classes here" src="image source here">
 </div>
 """
