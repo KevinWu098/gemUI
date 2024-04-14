@@ -35,13 +35,21 @@ export function ChatList({ messages, session, isShared }: ChatList) {
         </>
       ) : null}
 
-      {messages.map(message => (
-        <div key={message.id}>
-          {message.spinner}
-          {message.display}
-          {message.attachments}
-        </div>
-      ))}
+      {messages.map(message => {
+        console.log(message)
+        return (
+          <div key={message.id}>
+            {message.spinner}
+            {message.display}
+            {message.attachments}
+            {/* {message.event === 'thought' ? (
+              <div>{message.data.thought ?? 'Failed to render thought'}</div>
+            ) : (
+              message.display
+            )} */}
+          </div>
+        )
+      })}
     </div>
   ) : null
 }

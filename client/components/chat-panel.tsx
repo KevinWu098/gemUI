@@ -10,7 +10,7 @@ import { ChatShareDialog } from '@/components/chat-share-dialog'
 import { useAIState, useActions, useUIState } from 'ai/rsc'
 import type { AI } from '@/lib/chat/actions'
 import { nanoid } from 'nanoid'
-import { UserMessage } from './stocks/message'
+import { BotMessageNew, UserMessage } from './stocks/message'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 
@@ -36,18 +36,23 @@ const exampleMessages = [
   }
 ]
 
-const socket = new WebSocket('ws://localhost:8000')
-
-const SocketIndicator = () => {
-  const state = socket.readyState
+const SocketIndicator = ({ socket }: { socket: WebSocket | undefined }) => {
+  const state = socket?.readyState
+  console.log(state)
 
   return (
     <div
       className={cn(
         'fixed bottom-1 right-1 z-50 size-6 rounded-full bg-gray-800 p-3',
-        state === socket.CLOSED && 'bg-red-500',
-        state === socket.CLOSING && 'bg-yellow-500',
-        state === socket.OPEN && 'bg-green-500'
+        !state || state === socket?.CLOSED
+          ? 'bg-red-500'
+          : state === socket?.CLOSING
+            ? 'bg-yellow-500'
+            : state === socket?.OPEN
+              ? 'bg-green-500'
+              : 'bg-red-500'
+        // state === socket?.CLOSING && 'bg-yellow-500',
+        // state === socket?.OPEN && 'bg-green-500'
       )}
     />
   )
@@ -66,26 +71,62 @@ export function ChatPanel({
   // const { submitUserMessage } = useActions()
   const [shareDialogOpen, setShareDialogOpen] = React.useState(false)
 
+  const [socket, setSocket] = React.useState<WebSocket>()
+
+  React.useEffect(() => {
+    setSocket(new WebSocket('ws://localhost:8000/ws?client_id=123'))
+  }, [])
+
   const submitUserMessage = (message: string) => {
+    if (!socket) {
+      console.log('Socket not connected')
+      return
+    }
+
     socket.send(JSON.stringify({ event: 'prompt', prompt: message }))
     console.log('Message Sent')
   }
 
-  socket.onmessage = function (event) {
-    console.log('Received message:', event.data)
+  if (socket) {
+    socket.onopen = function () {
+      socket.send(JSON.stringify({ event: 'start' }))
+    }
 
-    try {
-      const message = JSON.parse(event.data)
-      setMessages(currentMessages => [...currentMessages, message])
-      console.log('Parsed message:', message)
-    } catch (e) {
-      console.error('Error parsing message:', e)
+    /**
+   * 
+   *  {
+        event: 'thought',
+        data: {
+          thought: 'I just navigated to https://www.dominos.com/en/pages/order/'
+      }
+    }
+   */
+    socket.onmessage = function (event) {
+      console.log('Received message:', event.data)
+
+      try {
+        const message = JSON.parse(event.data)
+        setMessages(currentMessages => [
+          ...currentMessages,
+          {
+            id: nanoid(),
+            display:
+              message.event === 'thought' ? (
+                <BotMessageNew>{message.data.thought}</BotMessageNew>
+              ) : null
+          }
+        ])
+
+        console.log('Parsed message:', message)
+      } catch (e) {
+        console.error('Error parsing message:', e)
+      }
     }
   }
 
   return (
     <div className="fixed inset-x-0 bg-white/90 bottom-0 w-full duration-300 ease-in-out peer-[[data-state=open]]:group-[]:lg:pl-[250px] peer-[[data-state=open]]:group-[]:xl:pl-[300px] dark:from-10%">
-      <SocketIndicator />
+      <SocketIndicator socket={socket} />
 
       <ButtonScrollToBottom
         isAtBottom={isAtBottom}
