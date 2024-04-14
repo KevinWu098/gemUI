@@ -71,10 +71,13 @@ def trimHTML(browser):
             "META",
             "TITLE",
         ]
+    # Remove the specified tags from the page
     for tag in nonContentTags:
-        browser.execute_script("""
-        var elements = document.getElementsByTagName('""" + tag + """);
-        while (elements.length > 0) {
-            elements[0].parentNode.removeChild(elements[0]);
-        }
-    """)
+        # Find elements by tag name and remove each one
+        elements = browser.find_elements(By.TAG_NAME, tag)
+        for element in elements:
+            browser.execute_script("""
+                var element = arguments[0];
+                element.parentNode.removeChild(element);
+                """, element)
+    
