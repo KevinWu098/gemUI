@@ -58,7 +58,15 @@ If the request requires multiple choices, return ALL RELEVANT selectors that con
 For example, if there are input fields related to the user's request, return all input fields that are relevant to the user's request.
 If there are both buttons and input fields that are relevant to the user's request, return all buttons and input fields that are relevant to the user's request.
 
-Output your result in the following format and output as many selectors as necessary. Ensure that the output is a JSON object and that there is a diversity of file paths aligned to the specific types of each image:
+First, plan out what you need to scrape and what you need to return. Then, output the relevant selectors or images that are necessary for the user's request.
+Output your result in the following format and output as many selectors as necessary.
+Example: User wants to login
+
+Plan:
+- If I am on the login page, I need to return the input fields for the username and password, and the login button.
+- If not, I will need to return the button that navigates to the login page.
+
+```json
 [
     {
         "type": xpath
@@ -70,12 +78,15 @@ Output your result in the following format and output as many selectors as neces
     },
     ...
 ]
+```
 
 if instead you decide to navigate directly to a new page, output your result in the following format:
+```json
 {
     "type": "navigate",
     "url": the url of the page you want to navigate to
 }
+```
 """
 
 system_prompt_generate = """
