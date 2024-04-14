@@ -5,6 +5,7 @@ import json
 from selenium_functions import extract_elements_by_xpath
 import PIL.Image
 import re
+from constants import *
 
 # Load environment variables
 from dotenv import load_dotenv
@@ -104,22 +105,23 @@ def generate_content_with_cycling_keys(prompt, system_prompt, image=None):
 
     # Generate content using the provided prompt
     if image is None:
-        response = model.generate_content(prompt)
+        response = model.generate_content(prompt, request_options={"timeout": 1000})
     else:
-        response = model.generate_content([prompt, image])
+        response = model.generate_content(
+            [prompt, image], request_options={"timeout": 1000}
+        )
     return response.text
 
 
 def interpret(prompt, url, html, img):
     user_prompt = f"""
-user: {prompt}
+    current_url: {url}
+    current_page: {html}
+    current_screenshot is attached
+    Output selectors for relevant elements (divs, inputs, and images) that are relevant to the user's request.x
 
-current_url: {url}
-
-current_page: {html}
-
-current_screenshot is attached
-"""
+    user: {prompt}
+    """
     
     # Generate content using the prompt and the website HTML
     response = generate_content_with_cycling_keys(user_prompt, system_prompt_interpret, img)
@@ -160,14 +162,15 @@ def generate(html, selectors):
         if element['type'] == 'xpath':
             dom_elements += extract_elements_by_xpath(html, element["selector"])
             dom_elements += "\n"
-        elif element['type'] == 'id':
-            print("ID selector not handled yet")
-            pass
         else:
             dom_elements += f"src: {element['selector']}\n"
-    design = PIL.Image.open("design.png")
     generated_ui = generate_content_with_cycling_keys(
-    "Use the attached branding guide to style the output. Use the typographies and hex codes defined in the image. Do not use Tailwind Classes\nBase Url for images (if any): https://dominos.com" + dom_elements, system_prompt_generate, image=design
+    design_schema
+    + "\n\n"
+    + dom_elements
+    + "\n\n"
+    + '"Only output div, button, input, img, and select elements. Do not use Tailwind Classes\nBase Url for images (if any): https://dominos.com \n\n',
+    system_prompt_generate,
 )
     # remove the ``` and html from the generated_ui response
     generated_ui = generated_ui.replace("```html", "").replace("```", "")
