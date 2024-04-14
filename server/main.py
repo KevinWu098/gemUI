@@ -14,8 +14,10 @@ from selenium_functions import (
     scrapeById,
     scrapeByXPath,
     selenium_type,
+    take_screenshot,
 )
-from gemini_functions import interpret
+from gemini_functions import generate, interpret
+import PIL.Image
 
 from starlette.middleware.cors import CORSMiddleware
 from typing import Optional
@@ -70,66 +72,29 @@ async def websocket_endpoint(websocket: WebSocket, client_id: Optional[str] = No
                 # scrape the HTML
                 html = scrape(browser)
                 print("Scraped HTML")
-                # TODO: feed image or video feed to gemini
+                take_screenshot(browser)
+                img = PIL.Image.open("website.png")
                 # give the current URL to Gemini
                 url = getUrl(browser)
                 print("Got URL: ", url)
                 prompt = data["prompt"]
+
                 # give the HTML and the url to gemini
                 print("Gemini is thinking...")
-                selector_object = interpret(prompt, url, html)
+                selectors = interpret(prompt, url, html, img)
 
-                # clean up selector_object, remove the json and backticks
-                selector_object = selector_object.replace("`", "").replace("json", "")
-                # parse the selector object
-                selector_object = json.loads(selector_object)
+                generated_ui = generate(html, selectors)
 
-                # use the selector object to scrape the UI
-                elements = (
-                    []
-                )  #!: This will need to be changed to iterate through the selector object
-                if selector_object["type"] == "xpath":
-                    elements = scrapeByXPath(browser, selector_object["selector"])
-                elif selector_object["type"] == "id":
-                    elements = scrapeById(browser, selector_object["selector"])
-                elif selector_object["type"] == "navigation":
-                    browser = navigate(browser, selector_object["url"])
-                else:
-                    print(selector_object)
-
-                if len(elements):
-                    await manager.send_personal_message(
-                        {
-                            "event": "action",
-                            "data": {
-                                "messageToUser": "Dylan needs to prompt engineer",
-                                "selectors": selector_object["selector"],
-                                "html": elements,
-                            },
-                        },
-                        websocket,
-                    )
-                elif selector_object["type"] == "navigation":
-                    await manager.send_personal_message(
-                        {
-                            "event": "thought",
-                            "data": {
-                                "thought": "I just navigated to "
-                                + selector_object["url"]
-                            },
-                        },
-                        websocket,
-                    )
-                else:
-                    await manager.send_personal_message(
-                        {
-                            "event": "thought",
-                            "data": {
-                                "thought": "I couldn't interact with the browser properly."
-                            },
-                        },
-                        websocket,
-                    )
+                await manager.send_personal_message(
+                    {
+                        "event": "ui",
+                        "data": {
+                            "html": generated_ui,
+                        }
+                    },
+                    websocket
+                )
+                
             elif (event == "userAction"):
                 selector = event["id"]        # will be used to query
                 element = event["element"]    # the type of input/action
@@ -146,7 +111,8 @@ async def websocket_endpoint(websocket: WebSocket, client_id: Optional[str] = No
                 await manager.send_personal_message(
                     {
                         "event": "done"
-                    }
+                    },
+                    websocket
                 )
     except WebSocketDisconnect:
         print("Disconnecting...")

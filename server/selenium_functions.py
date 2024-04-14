@@ -1,6 +1,7 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
+from lxml import html
 
 def open_browser(browser=None):
     if (browser):
@@ -35,6 +36,19 @@ def scrapeByXPath(browser, xpath):
     # iterate through each xpath, and get outer html if found
     xpaths = [browser.find_element(By.XPATH, i).get_attribute('outerHTML') for i in xpath]
     return xpaths
+
+def extract_elements_by_xpath(html_string, xpath_selector):
+    # Parse the HTML
+    tree = html.fromstring(html_string)
+
+    # Apply the XPath selector
+    elements = tree.xpath(xpath_selector)
+
+    # Return a list of outer HTML for each element
+    return str([html.tostring(element).decode("utf-8") for element in elements] + [xpath_selector])
+
+def take_screenshot(browser):
+    screenshot = browser.save_screenshot("website.png")
 
 def click(browser, selector):
     browser.find_element(By.ID, selector).click()
