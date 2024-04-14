@@ -51,10 +51,10 @@ def take_screenshot(browser):
     screenshot = browser.save_screenshot("website.png")
 
 def click(browser, selector):
-    browser.find_element(By.ID, selector).click()
+    browser.find_element(By.XPATH, selector).click()
 
 def selenium_type(browser, selector, text):
-    browser.find_element(By.ID, selector).send_keys(text)
+    browser.find_element(By.XPATH, selector).send_keys(text)
 
 def trimHTML(browser):
     nonContentTags = [
