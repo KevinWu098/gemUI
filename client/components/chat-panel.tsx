@@ -112,7 +112,7 @@ export function ChatPanel({
   const [loading, setLoading] = React.useState(false)
 
   React.useEffect(() => {
-    // setSocket(new WebSocket('ws://localhost:8000/ws?client_id=123'))
+    setSocket(new WebSocket('ws://localhost:8000/ws?client_id=123'))
   }, [])
 
   const submitUserMessage = (message: string) => {
