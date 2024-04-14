@@ -4,42 +4,15 @@
 /* eslint-disable @next/next/no-img-element */
 import 'server-only'
 
-import {
-  createAI,
-  createStreamableUI,
-  getMutableAIState,
-  getAIState,
-  createStreamableValue
-} from 'ai/rsc'
+import { createAI, getAIState } from 'ai/rsc'
 
 import { nanoid, sleep } from '@/lib/utils'
 import { saveChat } from '@/app/actions'
-import {
-  BotThought,
-  SpinnerMessage,
-  UserMessage
-} from '@/components/messages/message'
+import { BotMessage, UserMessage } from '@/components/messages/message'
 import { Chat } from '../types'
 import { auth } from '@/auth'
-import { FlightStatus } from '@/components/flights/flight-status'
-import { SelectSeats } from '@/components/flights/select-seats'
-import { ListFlights } from '@/components/flights/list-flights'
-import { BoardingPass } from '@/components/flights/boarding-pass'
-import { PurchaseTickets } from '@/components/flights/purchase-ticket'
-import { CheckIcon, SpinnerIcon } from '@/components/ui/icons'
-import { format } from 'date-fns'
-import { experimental_streamText } from 'ai'
-import { google } from 'ai/google'
-import { GoogleGenerativeAI } from '@google/generative-ai'
-import { z } from 'zod'
-import { ListHotels } from '@/components/hotels/list-hotels'
-import { Destinations } from '@/components/flights/destinations'
-import { Video } from '@/components/media/video'
-import { rateLimit } from './ratelimit'
 
-const genAI = new GoogleGenerativeAI(
-  process.env.GOOGLE_GENERATIVE_AI_API_KEY || ''
-)
+import { GoogleGenerativeAI } from '@google/generative-ai'
 
 export type Message = {
   role: 'user' | 'assistant' | 'system' | 'function' | 'data' | 'tool'
@@ -121,11 +94,11 @@ export const getUIStateFromAIState = (aiState: Chat) => {
       id: `${aiState.chatId}-${index}`,
       display:
         message.role === 'assistant' ? (
-          <BotThought content={message.content} />
+          <BotMessage content={message.content} />
         ) : message.role === 'user' ? (
           <UserMessage showAvatar>{message.content}</UserMessage>
         ) : (
-          <BotThought content={message.content} />
+          <BotMessage content={message.content} />
         )
     }))
 }
