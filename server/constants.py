@@ -140,6 +140,11 @@ If there are both buttons and input fields that are relevant to the user's reque
 Common URLS:
 - https://myquest.questdiagnostics.com/web/home
 - https://dominos.com
+
+Common Important Elements:
+- SigUp/Login Button
+- Schedule Button
+- Search Bar
 """
 
 system_prompt_generate = """
