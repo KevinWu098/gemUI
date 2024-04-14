@@ -23,17 +23,22 @@ import { cn } from '@/lib/utils'
 import Transcript from './whisper/Transcript'
 
 import { Mic } from 'lucide-react'
+import { sendSocketMessage } from './chat-panel'
 
 export function PromptForm({
   input,
-  setInput
+  setInput,
+  socket,
+  loading
 }: {
   input: string
   setInput: (value: string) => void
+  socket: WebSocket | undefined
+  loading: boolean
 }) {
   const { formRef, onKeyDown } = useEnterSubmit()
   const inputRef = React.useRef<HTMLTextAreaElement>(null)
-  const { submitUserMessage, describeImage } = useActions()
+  const { describeImage } = useActions()
   const [_, setMessages] = useUIState<typeof AI>()
 
   const transcriber = useTranscriber()
@@ -63,18 +68,33 @@ export function PromptForm({
         if (!value) return
 
         // Optimistically add user message UI
-        setMessages(currentMessages => [
-          ...currentMessages,
-          {
-            id: nanoid(),
-            display: <UserMessage>{value}</UserMessage>
-          }
-        ])
+        // setMessages(currentMessages => [
+        //   ...currentMessages,
+        //   {
+        //     id: nanoid(),
+        //     display: <UserMessage>{value}</UserMessage>
+        //   }
+        // ])
 
         try {
           // Submit and get response message
-          const responseMessage = await submitUserMessage(value)
-          setMessages(currentMessages => [...currentMessages, responseMessage])
+          // const responseMessage = await submitUserMessage(value)
+          // setMessages(currentMessages => [...currentMessages, responseMessage])
+
+          if (!socket) {
+            console.log('Tried sending message (non-example), no socket')
+            return
+          }
+
+          setMessages(currentMessages => [
+            ...currentMessages,
+            {
+              id: nanoid(),
+              display: <UserMessage>{value}</UserMessage>
+            }
+          ])
+
+          sendSocketMessage(socket, { event: 'prompt', prompt: value }, loading)
         } catch {
           toast(
             <div className="text-red-600">
