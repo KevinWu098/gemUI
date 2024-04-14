@@ -70,7 +70,7 @@ async def websocket_endpoint(websocket: WebSocket, client_id: Optional[str] = No
             if event == "start":
                 browser = open_browser(browser)
             elif event == "prompt":
-                await navigate_ui(browser, data)
+                await navigate_ui(browser, data, websocket)
                 
             elif (event == "userAction"):
                 selector = data["id"]        # will be used to query
@@ -83,7 +83,7 @@ async def websocket_endpoint(websocket: WebSocket, client_id: Optional[str] = No
                 if element == "button":
                     click(browser, selector)
                     sleep(1.5)
-                    await navigate_ui(browser, data)
+                    await navigate_ui(browser, data, websocket)
                 elif element == "input":
                     selenium_type(browser, selector, value)
                 else:
@@ -109,7 +109,7 @@ if __name__ == "__main__":
     # ws://localhost:8000/ws?client_id=123
     uvicorn.run(app, host="0.0.0.0", port=10000)
 
-async def navigate_ui(browser, data):
+async def navigate_ui(browser, data, websocket):
     # scrape the HTML
     html = scrape(browser)
     print("Scraped HTML")
