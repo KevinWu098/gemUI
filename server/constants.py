@@ -28,16 +28,28 @@ color: #646464;
 font-family: Poppins;
 font-weight: 500;
 
+default text
+color: #646464;
+
 Components:
 
 primary button
 border-radius: 0.5rem;
 background: #9F03FE;
 
+primary button text
+color: #FFF;
+font-weight: 500;
+
 secondary button
 border-radius: 0.5rem;
 border: 3px solid #DEDEDE;
-background: #F5F4F7;
+
+secondary button text
+color: #2B2B2B;
+font-family: Inter;
+font-weight: 500;
+
 
 input:
 border-radius: 0.5rem;
@@ -48,9 +60,25 @@ background: #FFF;
 # goal: "type": "src", "selector": "some url I think"
 system_prompt_interpret = """
 You are a web browser navigation assistant that trims and scrapes relevant portions of the UI for a user. Relevant is defined as the portion of the UI that the user requests for.
+Always output a plan before outputting any jsons.
+
+# If the user wants to go to a specific page, output the following format:
+
+Example: Go to vercel.com
+
+Plan:
+- I need to navigate to the page
+
+```json
+{
+    "type": "navigate",
+    "url": "https://vercel.com"
+}
+```
+
+# For non navigation requests:
 Only return selectors or images that are relevant to the user's request.
 The selectors should only be for button, input, or text elements.
-
 Whenever a user requests something, you will return the xpath selector or the src attribute of an image that returns the path to the specific file the image is stored in within the client file of the website.
 Ensure that all paths end with the file extension of the image (examples are .jpg, .png, .gif, etc.)
 
@@ -58,9 +86,31 @@ If the request requires multiple choices, return ALL RELEVANT selectors that con
 For example, if there are input fields related to the user's request, return all input fields that are relevant to the user's request.
 If there are both buttons and input fields that are relevant to the user's request, return all buttons and input fields that are relevant to the user's request.
 
-First, plan out what you need to scrape and what you need to return. Then, output the relevant selectors or images that are necessary for the user's request.
-Output your result in the following format and output as many selectors as necessary.
-Example: I want to see the attractions.
+## If the user does not provide any specific instructions, select important elements on the page:
+
+Example: Go to vercel.com
+Already on vercel.com
+
+Plan:
+- I am already on the page
+- I will select some of the important elements on the page
+```json
+[
+    {
+        "type": xpath
+        "selector": login button
+    },
+    {
+        "type": xpath
+        "selector": schedule button
+    },
+    ...
+]
+```
+
+## If the user asks for specific elements on the page, output the following format:
+
+Example One: I want to see the attractions.
 
 Plan:
 - I need to select the attraction items on the page.
@@ -79,14 +129,6 @@ Plan:
     },
     ...
 ]
-```
-
-if instead you decide to navigate directly to a new page, output your result in the following format:
-```json
-{
-    "type": "navigate",
-    "url": the url of the page you want to navigate to
-}
 ```
 """
 
@@ -107,13 +149,15 @@ Only output images if they are contained in the DOM elements that were given to 
 Only output div, button, input, select, and img elements. Do not output any other elements.
 If your output contains a input element, ensure that it is followed by a button element that will be used to submit the form.
 
+Make sure all text and fields are visible and styled correctly.
+
 Output your result in the following format:
 <div class='container classes here'>
     <div class='input classes here'>
        ...
     </div>
     <button class='button classes here' special-id='button selector here'">
-        ...
+        Submit
     </button>
     <input class='input classes here' special-id='input selector here'>
     <img class='img classes here' src='image source here'>

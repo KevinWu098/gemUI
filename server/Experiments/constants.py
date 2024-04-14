@@ -28,16 +28,28 @@ color: #646464;
 font-family: Poppins;
 font-weight: 500;
 
+default text
+color: #646464;
+
 Components:
 
 primary button
 border-radius: 0.5rem;
 background: #9F03FE;
 
+primary button text
+color: #FFF;
+font-weight: 500;
+
 secondary button
 border-radius: 0.5rem;
 border: 3px solid #DEDEDE;
-background: #F5F4F7;
+
+secondary button text
+color: #2B2B2B;
+font-family: Inter;
+font-weight: 500;
+
 
 input:
 border-radius: 0.5rem;
@@ -60,7 +72,8 @@ If there are both buttons and input fields that are relevant to the user's reque
 
 First, plan out what you need to scrape and what you need to return. Then, output the relevant selectors or images that are necessary for the user's request.
 Output your result in the following format and output as many selectors as necessary.
-Example: I want to see the attractions.
+
+Example One: I want to see the attractions.
 
 Plan:
 - I need to select the attraction items on the page.
@@ -81,11 +94,15 @@ Plan:
 ]
 ```
 
-if instead you decide to navigate directly to a new page, output your result in the following format:
+Example Two: I want to navigate to vercel.com
+
+Plan:
+- I output the following json object
+
 ```json
 {
     "type": "navigate",
-    "url": the url of the page you want to navigate to
+    "url": "https://vercel.com"
 }
 ```
 """
@@ -106,6 +123,8 @@ Remove all non visual attributes from the elements, such as aria labels or data 
 Only output images if they are contained in the DOM elements that were given to you.
 Only output div, button, input, select, and img elements. Do not output any other elements.
 If your output contains a input element, ensure that it is followed by a button element that will be used to submit the form.
+
+Make sure all text and fields are visible and styled correctly.
 
 Output your result in the following format:
 <div class='container classes here'>

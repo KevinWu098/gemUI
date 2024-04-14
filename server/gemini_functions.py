@@ -5,7 +5,7 @@ import json
 from selenium_functions import extract_elements_by_xpath
 import PIL.Image
 import re
-from constants import *
+from constants import design_schema, system_prompt_generate, system_prompt_interpret
 
 # Load environment variables
 from dotenv import load_dotenv
@@ -65,11 +65,16 @@ def generate_content_with_cycling_keys(prompt, system_prompt, image=None):
 
 def interpret(prompt, url, html_string, img):
     user_prompt = f"""
-    current_url: {url}
-    current_page: {html_string}
-    current_screenshot is attached
-    Output selectors for relevant elements (divs, inputs, and images) that are relevant to the user's request.x
-
+    Current Page: 
+    {html_string}
+    
+    
+    Current Url:
+    {url}
+    
+    Current_screenshot is attached
+    
+    Output a plan, then either output selectors, or a navigate object.
     user: {prompt}
     """
 
@@ -77,6 +82,8 @@ def interpret(prompt, url, html_string, img):
     response = generate_content_with_cycling_keys(
         user_prompt, system_prompt_interpret, img
     )
+
+    print(response)
 
     if "```json" in response:
         response = response.split("```json")[1].split("```")[0]
