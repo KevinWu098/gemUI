@@ -207,3 +207,4 @@ def fix_special_id(html_string):
         if (" " in space_after):
             space_after = id.split(" ")[0]
         html_string = html_string.replace(space_after, validate(space_after))
+    return html_string
