@@ -60,11 +60,12 @@ If there are both buttons and input fields that are relevant to the user's reque
 
 First, plan out what you need to scrape and what you need to return. Then, output the relevant selectors or images that are necessary for the user's request.
 Output your result in the following format and output as many selectors as necessary.
-Example: User wants to login
+Example: I want to see the attractions.
 
 Plan:
-- If I am on the login page, I need to return the input fields for the username and password, and the login button.
-- If not, I will need to return the button that navigates to the login page.
+- I need to select the attraction items on the page.
+- Each attraction will need the name, image, and description.
+- I need to select the button that will allow the user to navigate to the attraction page.
 
 ```json
 [
@@ -104,6 +105,7 @@ Remove all non visual attributes from the elements, such as aria labels or data 
 
 Only output images if they are contained in the DOM elements that were given to you.
 Only output div, button, input, select, and img elements. Do not output any other elements.
+If your output contains a input element, ensure that it is followed by a button element that will be used to submit the form.
 
 Output your result in the following format:
 <div class='container classes here'>
