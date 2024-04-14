@@ -10,7 +10,7 @@ def open_browser(browser=None):
     options.add_experimental_option("detach", True)
 
     browser = webdriver.Chrome(options=options)
-    browser.get('https://developer.chrome.com/')
+    browser.get('https://myquest.questdiagnostics.com/web/home')
     return browser
 
 def navigate(browser, url):
