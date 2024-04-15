@@ -164,6 +164,14 @@ function page() {
               src="./features_gemui.svg"
               style={{ margin: '0 98px', width: '90vw' }}
             />
+            <button
+              className="hero"
+              onClick={() => {
+                window.location.href = '/'
+              }}
+            >
+              ✦ Start Now ✦
+            </button>
           </div>
         </ParallaxLayer>
       </Parallax>
