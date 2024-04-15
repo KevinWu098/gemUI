@@ -109,17 +109,6 @@ user: {prompt}
     #   'selector': '//a[@data-quid="start-your-order-carryout-cta"]'}]
     obj = json.loads(response)
 
-    # grab the previous conversation and add the new prompt
-    messages.append(
-        {
-            "role": "user",
-            "parts": [user_prompt],
-        }
-    )
-
-    # remember the response
-    messages.append({"role": "model", "parts": [response]})
-
     # return the selector object
     return obj
 
@@ -172,16 +161,6 @@ User Prompt:
     #   'selector': '//a[@data-quid="start-your-order-carryout-cta"]'}]
     obj = json.loads(response)
 
-    messages.append(
-        {
-            "role": "user",
-            "parts": [user_prompt],
-        }
-    )
-
-    # remember the response
-    messages.append({"role": "model", "parts": [response]})
-
     return obj
 
 
@@ -205,6 +184,7 @@ def generate(html, selectors, url):
         + "\n\n"
         + f"Only output div, button, input, and select elements.",
     )
+    print(generated_ui)
     # remove the ``` and html from the generated_ui response
     generated_ui = generated_ui.replace("```html", "").replace("```", "")
     # fix the special id that has only '' or "" in the special-id

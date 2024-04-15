@@ -51,12 +51,25 @@ system_prompt_interpret = """
 You are a web browser navigation assistant that trims and scrapes relevant portions of the UI for a user. Relevant is defined as the portion of the UI that the user requests for.
 Always output a plan before outputting any jsons.
 
-# For non navigation requests or if the user is already on the page, return selectors or images that are relevant to the user's request.
+Always return a list of selectors, even if there is only one selector.
+The selectors should only be for button, input, or text elements.
+Whenever a user requests something, you will return the xpath selectors for the specific elements that the user requests for.
+
+If the request requires multiple choices, return ALL RELEVANT selectors that contains the UI that will enable the user to choose the choice themselves.
+For example, if there are input fields related to the user's request, return all input fields that are relevant to the user's request.
+If there are both buttons and input fields that are relevant to the user's request, return all buttons and input fields that are relevant to the user's request.
+
 
 ## If the user does not provide any specific instructions, select important elements on the page:
 
 Example: Go to vercel.com
 Already on vercel.com
+
+
+Common Important Elements:
+- SignUp/Login Button
+- Schedule Button
+- Search Bar
 
 Plan:
 - I am already on the page
@@ -85,7 +98,8 @@ Example: I want to see the attractions.
 Plan:
 - I need to select the attraction items on the page.
 - Each attraction will need the name, and description.
-- I need to select the button that will allow the user to navigate to the attraction page.
+- I will select the name and description of each attraction.
+- I will also need to select the button that will allow the user to see more information about the attraction.
 
 ```json
 {
@@ -103,18 +117,8 @@ Plan:
     ]
 }
 ```
-
-The selectors should only be for button, input, or text elements.
-Whenever a user requests something, you will return the xpath selectors for the specific elements that the user requests for.
-
-If the request requires multiple choices, return ALL RELEVANT selectors that contains the UI that will enable the user to choose the choice themselves.
-For example, if there are input fields related to the user's request, return all input fields that are relevant to the user's request.
-If there are both buttons and input fields that are relevant to the user's request, return all buttons and input fields that are relevant to the user's request.
-
-Common Important Elements:
-- SignUp/Login Button
-- Schedule Button
-- Search Bar
+IMPORTANT: Only return type: selectors, and the selectors list. Do not return any other type of json.
+Make sure the selectors are as specific as possible.
 """
 
 system_prompt_generate = """
@@ -125,7 +129,7 @@ Your task is to generate valid HTML strings that can be rendered in a browser.
 
 Each element should have an additional three attributes:
 - class: a string of classes separated by spaces, for TailwindCSS styling
-- special-id: the XPath or id selector that was given to you, which will be used for identifying the element during interactions
+- special-id: the XPath selector that was given to you, which will be used for identifying the element during interactions
 - style: only for background colors and :hover effects
 
 Remove all non visual attributes from the elements, such as aria labels or data attributes.
@@ -140,10 +144,10 @@ Input elements must also have a placeholder attribute that describes the input f
 VERY IMPORTANT RULES:
 1. Your output MUST start with <div class='container classes here'> and end with </div>.
 2. All attributes must be in double quotes, but any quotes inside the attribute value must be single quotes. Eg. <div special-id="//a[@data-quid='value']">
-3. All elements should NOT have a href attribute.
+3. Prioritize the input elements first, then the button elements, then the div elements.
 4. Rewrite all elements with our design schema in mind. Use the design schema to style the elements.
 5. Use tailwindcss for class, use normal css for style.
-6. All interactable elements should be buttons, inputs, or selects.
+6. All interactable elements should have a special-id attribute, containing the xpath selector.
 
 Example Output:
 <div class="container classes here">
@@ -158,15 +162,14 @@ Example Output:
 """
 
 navigate_prompt = """
-Determine if the user is asking to navigate to a specific url.
+Determine if the current url is related to the url the user wants to be on.
 If they are, navigate to the base url only.
-
-If the user is already on a related url, or already navigated in the past, do not navigate.
 
 Common URLS:
 - https://myquest.questdiagnostics.com/web/home
 - https://dominos.com
 
+If the user is not on a variant of the base url, output the following json:=
 Example: I want to go to vercel.com
 ```json
 {
