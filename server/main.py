@@ -1,8 +1,5 @@
 from time import sleep
 from fastapi import FastAPI
-from pydantic import BaseModel
-from dotenv import load_dotenv
-import os
 import uvicorn
 from manager import manager
 from fastapi.websockets import WebSocket, WebSocketDisconnect
@@ -113,74 +110,82 @@ if __name__ == "__main__":
 
 
 async def navigate_ui(browser, websocket):
-    try:
-        global active_prompt
-        # scrape the HTML
-        html = scrape(browser)
-        print("Scraped HTML")
-        take_screenshot(browser)
-        img = PIL.Image.open("website.png")
-        # give the current URL to Gemini
-        url = getUrl(browser)
-        print("Got URL: ", url)
+    nav_check_flag = False
+    interpret_flag = False
+    generate_flag = False
+    max_tries = 3
 
-        nav = navigate_check(active_prompt, url)
-        print(nav)
+    while (
+        not nav_check_flag or not interpret_flag or not generate_flag and max_tries > 0
+    ):
+        max_tries -= 1
+        try:
+            if not nav_check_flag:
+                url = getUrl(browser)
+                print(f"URL: {url}")
+                nav = navigate_check(active_prompt, url)
+                print(nav)
 
-        if nav["type"] == "navigate":
-            await manager.send_personal_message(
-                {
-                    "event": "thought",
-                    "data": {
-                        "thought": "I'm navigating to" + nav["url"],
+                if nav["type"] == "navigate":
+                    await manager.send_personal_message(
+                        {
+                            "event": "thought",
+                            "data": {
+                                "thought": f"I'm navigating to {nav['url']}",
+                            },
+                        },
+                        websocket,
+                    )
+                    navigate(browser, nav["url"])
+                    print(f"Navigating to {nav['url']}")
+                    await asyncio.sleep(1.5)
+                nav_check_flag = True
+
+            if not interpret_flag:
+                url = getUrl(browser)
+                html = scrape(browser)
+                take_screenshot(browser)
+                img = PIL.Image.open("website.png")
+
+                print("Gemini is interpreting...")
+                await manager.send_personal_message(
+                    {
+                        "event": "thought",
+                        "data": {
+                            "thought": "I'm interpreting the page...",
+                        },
                     },
-                },
-                websocket,
-            )
-            navigate(browser, nav["url"])
-            print("Navigating to ", nav["url"])
-            sleep(1.5)
+                    websocket,
+                )
+                selectors = interpret(active_prompt, url, html, img)
+                print(selectors)
+                interpret_flag = True
 
-        url = getUrl(browser)
-        print("Got URL: ", url)
-        html = scrape(browser)
-        take_screenshot(browser)
-        img = PIL.Image.open("website.png")
+            if not generate_flag:
+                print("Gemini is generating...")
+                await manager.send_personal_message(
+                    {
+                        "event": "thought",
+                        "data": {
+                            "thought": "I'm generating the UI...",
+                        },
+                    },
+                    websocket,
+                )
+                generated_ui = generate(html, selectors["selectors"], url)
+                print("Gemini is done...")
+                await manager.send_personal_message(
+                    {
+                        "event": "ui",
+                        "data": {
+                            "html": generated_ui,
+                        },
+                    },
+                    websocket,
+                )
+                generate_flag = True
 
-        print("Gemini is interpreting...")
-        # give the HTML and the url to gemini
-        await manager.send_personal_message(
-            {
-                "event": "thought",
-                "data": {
-                    "thought": "I'm interpreting the page...",
-                },
-            },
-            websocket,
-        )
-        selectors = interpret(active_prompt, url, html, img)
-
-        print("Gemini is generating...")
-        await manager.send_personal_message(
-            {
-                "event": "thought",
-                "data": {
-                    "thought": "I'm generating the UI...",
-                },
-            },
-            websocket,
-        )
-        generated_ui = generate(html, selectors["selectors"], url)
-        print(generated_ui)
-        print("Gemini is done...")
-        await manager.send_personal_message(
-            {
-                "event": "ui",
-                "data": {
-                    "html": generated_ui,
-                },
-            },
-            websocket,
-        )
-    except Exception as e:
-        print(e)
+        except Exception as e:
+            print(e)
+            # Optionally, reset specific flags here based on error type or content
+            # e.g., if "navigation error" in str(e): nav_check = False
