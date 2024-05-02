@@ -4,11 +4,14 @@ from selenium.webdriver.common.by import By
 from lxml import html
 import re
 
+
 def open_browser(browser=None):
     if browser:
         browser.quit()
     options = Options()
     options.add_experimental_option("detach", True)
+    options.add_argument("--headless=new")
+    options.headless = True
 
     browser = webdriver.Chrome(options=options)
     browser.get("https://developers.google.com/")
@@ -30,7 +33,7 @@ def scrape(browser):
     # trim it
     page_html = trimHTML(page_html)
     # save the html as a text file
-    with open("output.html", "w", encoding= "utf-8") as f:
+    with open("output.html", "w", encoding="utf-8") as f:
         f.write(page_html)
     return page_html
 
@@ -84,8 +87,9 @@ def trimHTML(html_string):
     html_string = remove_non_content_tags(html_string)
     html_string = clear_style_attributes(html_string)
     html_string = clean_html(html_string)
-    
+
     return html_string
+
 
 def remove_non_content_tags(html_string):
     nonContentTags = [
@@ -101,41 +105,45 @@ def remove_non_content_tags(html_string):
         "iframe",
         "audio",
         "svg",
-        "img"
+        "img",
     ]
 
     # Pattern to remove HTML comments
-    comments_pattern = r'<!--.*?-->'
+    comments_pattern = r"<!--.*?-->"
 
     # Remove HTML comments
-    html_string = re.sub(comments_pattern, '', html_string, flags=re.DOTALL)
+    html_string = re.sub(comments_pattern, "", html_string, flags=re.DOTALL)
 
     # Create a regular expression pattern that matches the specified tags
-    pattern = r'<({0})\b[^>]*>(.*?)</\1>'.format('|'.join(nonContentTags))
+    pattern = r"<({0})\b[^>]*>(.*?)</\1>".format("|".join(nonContentTags))
 
     # Use re.DOTALL to ensure that the dot (.) in the regular expression matches newlines as well
     # Use re.IGNORECASE to make the pattern case insensitive
     # Keep removing tags until there are none left
     while re.search(pattern, html_string, re.DOTALL | re.IGNORECASE):
-        html_string = re.sub(pattern, '', html_string, flags=re.DOTALL | re.IGNORECASE)
+        html_string = re.sub(pattern, "", html_string, flags=re.DOTALL | re.IGNORECASE)
 
     # Remove any remaining self-closing non-content tags (e.g., <br/>)
-    self_closing_pattern = r'<({0})\b[^>]*/>'.format('|'.join(nonContentTags))
-    html_string = re.sub(self_closing_pattern, '', html_string, flags=re.IGNORECASE)
+    self_closing_pattern = r"<({0})\b[^>]*/>".format("|".join(nonContentTags))
+    html_string = re.sub(self_closing_pattern, "", html_string, flags=re.IGNORECASE)
 
     return html_string
 
+
 def clear_style_attributes(html_content):
     # Regular expression to match style attributes
-    style_pattern = re.compile(r'\s*style\s*=\s*(".*?"|\'.*?\'|[^\'">\s]+)', re.IGNORECASE)
+    style_pattern = re.compile(
+        r'\s*style\s*=\s*(".*?"|\'.*?\'|[^\'">\s]+)', re.IGNORECASE
+    )
     # Remove style attributes
-    return style_pattern.sub('', html_content)
+    return style_pattern.sub("", html_content)
+
 
 # clean the HTML spaces and newlines
 def clean_html(html_content):
-    html_content = re.sub(r'<!DOCTYPE html>', '', html_content, flags=re.IGNORECASE)
+    html_content = re.sub(r"<!DOCTYPE html>", "", html_content, flags=re.IGNORECASE)
     # Remove newlines, carriage returns, and tabs
-    html_content = re.sub(r'[\n\r\t]+', '', html_content)
+    html_content = re.sub(r"[\n\r\t]+", "", html_content)
     # Replace sequences of more than two spaces with two spaces
-    html_content = re.sub(r'[ ]{2,}', '  ', html_content)
+    html_content = re.sub(r"[ ]{2,}", "  ", html_content)
     return html_content
