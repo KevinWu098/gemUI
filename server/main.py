@@ -172,7 +172,7 @@ async def navigate_ui(browser, websocket):
                     },
                     websocket,
                 )
-                generated_ui = generate(html, selectors["selectors"], url)
+                generated_ui = generate(html, selectors["selectors"], selectors["description"])
                 print("Gemini is done...")
                 await manager.send_personal_message(
                     {

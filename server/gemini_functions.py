@@ -164,7 +164,8 @@ User Prompt:
     return obj
 
 
-def generate(html, selectors, url):
+def generate(html, selectors, description):
+    
 
     # now generate the new UI
 
@@ -175,16 +176,21 @@ def generate(html, selectors, url):
             dom_elements += "\n"
         else:
             dom_elements += f"src: {element['selector']}\n"
-    generated_ui = generate_content_with_cycling_keys(
-        dom_elements
-        + "\n\n"
-        + system_prompt_generate
-        + "\n\n"
-        + design_schema
-        + "\n\n"
-        + f"Only output div, button, input, and select elements.",
-    )
-    print(generated_ui)
+    prompt= f"""
+Selected DOM Elements:
+{dom_elements}
+
+Description of the Page:
+{description}
+
+Design Schema:
+{design_schema}
+
+{system_prompt_generate}
+
+Only output div, button, input, and select elements.    
+"""
+    generated_ui = generate_content_with_cycling_keys(prompt)
     # remove the ``` and html from the generated_ui response
     generated_ui = generated_ui.replace("```html", "").replace("```", "")
     # fix the special id that has only '' or "" in the special-id
