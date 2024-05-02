@@ -1,0 +1,16 @@
+fastapi==0.110.1
+google-generativeai==0.5.0
+grpcio-status==1.62.1
+httptools==0.6.1
+ipykernel==6.29.3
+lxml==5.2.1
+pickleshare==0.7.5
+pillow==10.3.0
+pip-chill==1.0.3
+pysocks==1.7.1
+python-dotenv==1.0.1
+pyyaml==6.0.1
+selenium==4.19.0
+uvicorn==0.29.0
+watchfiles==0.21.0
+websockets==12.0
