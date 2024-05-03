@@ -25,7 +25,13 @@
   <br>
 </p>
 
-<!-- ### 🏅 HACKATHON — WINNING CATEGORY (ex: Best Use of X) -->
+----------
+We were inspired by Google Next 2024 when Vercel unleashed a thrilling integration with Gemini applied to the concept of generative UI. While their demo at its core was static and prebuilt, we wanted to build something dynamic; something that pulled from real websites to generate user interfaces.
+
+GemUI was built on top of the Vercel AI SDK and the open-sourced (Apache License 2.0) [Gemini starter kit](https://github.com/vercel-labs/gemini-chatbot?tab=License-1-ov-file#readme) provided by Vercel.
+
+<!-- 
+### 🏅 HACKATHON — WINNING CATEGORY (ex: Best Use of X)
 
 <br>
 
